@@ -1,0 +1,51 @@
+@keyframes logo-move-up-anim {
+    from {
+        transform: translateY(300px);
+    }
+    to {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes show-up-anim {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes disappear-anim {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.logo-move-up {
+    animation: logo-move-up-anim 1s ease;
+    animation-fill-mode: forwards;
+    animation-delay: 1.6s;
+}
+
+.login-show-up {
+    animation: show-up-anim 1s ease;
+    animation-fill-mode: forwards;
+    animation-delay: 1.8s;
+    z-index: 100;
+}
+
+.login-done {
+    animation: disappear-anim 1s ease;
+    animation-fill-mode: forwards;
+    z-index: 1;
+}
+
+.textarea-show-up {
+    animation: show-up-anim 2s ease;
+    animation-fill-mode: forwards;
+    z-index: 100;
+}
