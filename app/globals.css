@@ -17,6 +17,11 @@
   src: url('./assets/font/lemonMilk-r.otf');
 }
 
+@font-face {
+  font-family: 'cool';
+  src: url('./assets/font/cool.otf');
+}
+
 :root {
   --foreground-rgb: #FFF;
   --background-start-rgb: #FFF;

@@ -35,7 +35,7 @@
     animation: show-up-anim 1s ease;
     animation-fill-mode: forwards;
     animation-delay: 1.8s;
-    z-index: 100;
+    z-index: 30;
 }
 
 .login-done {
@@ -47,5 +47,5 @@
 .textarea-show-up {
     animation: show-up-anim 2s ease;
     animation-fill-mode: forwards;
-    z-index: 100;
+    z-index: 30;
 }
