@@ -25,6 +25,15 @@
     }
 }
 
+@keyframes highlight-anim {
+    from {
+        background-color: white;
+    }
+    to {
+        background-color: #EEE;
+    }
+}
+
 .logo-move-up {
     animation: logo-move-up-anim 1s ease;
     animation-fill-mode: forwards;
@@ -48,4 +57,9 @@
     animation: show-up-anim 2s ease;
     animation-fill-mode: forwards;
     z-index: 30;
+}
+
+.line-highlight {
+    animation: highlight-anim 0.8s ease;
+    animation-fill-mode: forwards;
 }

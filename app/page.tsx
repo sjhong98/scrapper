@@ -1,10 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react"
+// 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
+
+import { useEffect, useRef, useState } from "react";
+import { initializeApp } from "firebase/app";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc,   // 임의의 Id 지정
+  setDoc,   // Id 지정 가능
+  updateDoc,   // 수정
+  getDocs,  // 전체 읽어오기
+  getDoc,   // 문서 하나 읽어오기
+  deleteDoc, // 삭제
+  doc       // 특정 데이터 읽기
+ } from "firebase/firestore";
+
 import './styles/main.css';
 
 export default function Home() {
   const inputRef = useRef();
+  const lineRef = useRef();
   const inputContainerRef = useRef();
   const loginRef = useRef();
   const [logo, setLogo] = useState("");
@@ -12,6 +28,33 @@ export default function Home() {
   const [contentRev, setContentRev] = useState([]);
   const [isKorean, setIsKorean] = useState(false);
   const [koreanFlag, setKoreanFlag] = useState(0);
+  const [lineIndex, setLineIndex] = useState(-1);
+  const [snapshot, setSnapshot] = useState([]);
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
+    authDomain: "scrapper-9558b.firebaseapp.com",
+    databaseURL: "https://scrapper-9558b-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "scrapper-9558b",
+    storageBucket: "scrapper-9558b.appspot.com",
+    messagingSenderId: "241265284136",
+    appId: "1:241265284136:web:253ec9f008e31a3d03911d"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  useEffect(() => {
+    let query = doc(db, 'content', 'testUser1');
+    const fetchData = async () => {
+      let res = await getDoc(query);
+      setSnapshot(res); 
+    }
+    fetchData();
+  }, [])
+
+  useEffect(() => {
+    console.log(snapshot);
+  }, [snapshot])
 
   useEffect(() => {
     let i = 0;
@@ -53,29 +96,6 @@ export default function Home() {
     }
   };
 
-  function isKoreanMixedWithNonKorean(text) {
-    // 정규 표현식 패턴을 사용하여 한글과 한글이 아닌 문자가 섞인 문자열을 판별
-    const pattern = /[가-힣]+|[^\w\s]+/g;
-  
-    // 패턴과 일치하는 부분을 모두 찾음
-    const matches = text.match(pattern);
-  
-    // 일치하는 부분이 있고, 그 부분이 한글과 한글이 아닌 문자로 번갈아 나오는 경우에 true를 반환
-    if (matches && matches.length > 0) {
-      for (let i = 0; i < matches.length; i++) {
-        // 짝수 인덱스에서는 한글, 홀수 인덱스에서는 한글이 아닌 문자가 나와야 함
-        if (i % 2 === 0 && !/[가-힣]+/.test(matches[i])) {
-          return false;
-        } else if (i % 2 === 1 && !/[^\w\s]+/.test(matches[i])) {
-          return false;
-        }
-      }
-      return true;
-    }
-  
-    return false;
-  }
-
   const handleLineDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
@@ -85,9 +105,10 @@ export default function Home() {
       console.log(temp);
 
       if (/[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/.test(value)) {
-        if(/^[\s]*[가-힣\s]*[\s]*$/.test(value)) {    // 순수 한글만 포함된 문자열
+        if(/[ㄱ-ㅎㅏ-ㅣ]/.test(value) || /^[가-힣\s]*$/.test(value)) {    // 순수 한글만 포함된 문자열
           console.log("순수 한글");
           if(isKorean) {
+            console.log("popped!");
             temp.pop();
             setIsKorean(false);
           }
@@ -125,6 +146,7 @@ export default function Home() {
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0" onKeyDown={handleLogin}>
         <input placeholder="EMAIL" type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" style={{fontFamily:'lemon-r'}} />
         <input placeholder="PW" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" style={{fontFamily:'lemon-r'}} />
+        <a className="text-xl mt-12" href='/signup' >SIGN UP</a>
       </div>
 
 
@@ -137,7 +159,15 @@ export default function Home() {
         />
         <div className="w-2/3 h-screen flex flex-col items-center">
         { contentRev.map((item, index) => (
-            <p key={index} className="text-black text-3xl mt-12">{item}</p>
+            <p 
+              key={index} 
+              ref={lineRef}
+              onMouseOver={() => setLineIndex(index)} 
+              onMouseLeave={() => setLineIndex(-1)}
+              className={index===lineIndex ? "text-black text-3xl p-3 mt-2 rounded-md cursor-pointer line-highlight" : "text-black text-3xl p-3 mt-2 cursor-pointer rounded-md"}>
+              {item}
+            </p>
+              
         ))}
         </div>
       </div>
