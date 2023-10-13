@@ -43,6 +43,62 @@
       }
   }
 
+@keyframes available-to-upload-anim {
+    from {
+        color: gray;
+    }
+    to {
+        color: black;
+    }
+}
+
+@keyframes not-available-to-upload-anim {
+    from {
+        color: black;
+    }
+    to {
+        color: gray;
+    }
+}
+
+@keyframes logo-over-anim {
+    from {
+        font-size: 10vh;
+    }
+    to {
+        font-size: 12vh; /* 10rem / 6rem */
+    }
+}
+
+@keyframes logo-out-anim {
+    from {
+        transform: scale(1.67);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.logo-over {
+    animation: logo-over-anim 0.5s ease;
+    animation-fill-mode: forwards;
+}
+
+.logo-out {
+    animation: logo-out-anim 0.5s ease;
+    animation-fill-mode: forwards;
+}
+
+.available-to-upload {
+    animation: available-to-upload-anim 0.5s ease;
+    animation-fill-mode: forwards;
+}
+
+.not-available-to-upload {
+    animation: not-available-to-upload-anim 0.5s ease;
+    animation-fill-mode: forwards;
+}
+
 .logo-move-up {
     animation: logo-move-up-anim 1s ease;
     animation-fill-mode: forwards;
@@ -76,3 +132,4 @@
 .caret-blinking {
     animation: caret-blinking-anim 0.935s infinite;
 }
+

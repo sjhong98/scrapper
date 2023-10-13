@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { 
   getFirestore, 
   collection, 
@@ -22,6 +23,7 @@ import './styles/main.css';
 export default function Home() {
   const inputRef = useRef();
   const lineRef = useRef();
+  const logoRef = useRef();
   const inputContainerRef = useRef();
   const loginRef = useRef();
   const [logo, setLogo] = useState("");
@@ -33,6 +35,8 @@ export default function Home() {
   const [msg, setMsg] = useState("");
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
+  const [writing, setWriting] = useState("");
+  const [textareaHeight, setTextareaHeight] = useState(4);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -87,6 +91,30 @@ export default function Home() {
     }
   };
 
+  const handleLogoOver = () => {
+    logoRef.current.classList.add('font-black');
+  }
+
+  const handleLogoOut = () => {
+    logoRef.current.classList.remove('font-black');
+  }
+
+  const handleLogoClick = () => {
+    uploadWordToDb(writing);
+  }
+
+ useEffect(() => {
+    if(writing !== "") {
+      logoRef.current.classList.remove('not-available-to-upload');
+      logoRef.current.classList.add('available-to-upload');
+    }
+    else {
+      logoRef.current.classList.remove('available-to-upload');
+      logoRef.current.classList.add('not-available-to-upload');
+    }
+    setTextareaHeight((12 + writing.match(/\n/g) || []).length * 3.5);
+  }, [writing])
+
   useEffect(() => {
     if(active) {
       if(result === null)
@@ -111,21 +139,15 @@ export default function Home() {
     setActive(true);
   }, [result]);
 
-  const handleLineDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); 
-      let value = inputRef.current.innerText;
-      if (/^[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+$/.test(value)) {
-        if(e.nativeEvent.isComposing) {
-          uploadWordToDb(value);
-        }
-      } 
-      else {
-        uploadWordToDb(value);
-      }
-      inputRef.current.innerText = ''; 
-    }
-  }
+  
+
+  // const handleKeyDown = (e) => {
+  //   if (e.key === 'Enter') {
+  //     e.preventDefault(); 
+  //     console.log("줄바꿈");
+  //     setTextareaHeight(prev => prev + 4);
+  //   }
+  // }
   
   const uploadWordToDb = (word) => {
     let newElem = {likes: [], msg: word};
@@ -134,11 +156,13 @@ export default function Home() {
     }
     updateDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')), newData);
     getContentFromDb();
+    setWriting("");
   }
 
   const getContentFromDb = async () => {   
     await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login'))).then(res => {
       setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
+      console.log(res._document.data.value.mapValue.fields.contents.arrayValue.values[0].mapValue.fields.likes.arrayValue.values.length);  // .mapValue.fields.likes.arrayValue.value
     });
   }
 
@@ -152,7 +176,13 @@ export default function Home() {
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex-col justify-center items-center">
       <div className="h-1/6 w-screen flex justify-center items-center fixed transform translate-y-80 z-50 logo-move-up">
-        <p className="text-black font-bold text-8xl border-r-4 border-black pr-2" style={{fontFamily:'lemon-r'}}>
+        <p 
+          onMouseOver={handleLogoOver}
+          onMouseOut={handleLogoOut}
+          onClick={handleLogoClick}
+          ref={logoRef} 
+          className="text-gray-500 text-8xl border-r-4 border-black pr-2 cursor-pointer" 
+          style={{fontFamily:'lemon-r'}}>
             {logo}
         </p>
       </div>
@@ -166,20 +196,22 @@ export default function Home() {
 
 
       <div ref={inputContainerRef} className="w-screen flex flex-col justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
-        <div
-          onKeyDown={handleLineDown}
+        <textarea
+          value={writing}
+          onChange={(e) => setWriting(e.target.value)}
+          // onKeyDown={handleKeyDown}
           ref={inputRef} 
-          contentEditable='true' 
-          className="w-2/3 text-black text-3xl text-center mt-80 focus:outline-none leading-[60px] overflow-hidden" 
+          style={{height:`${textareaHeight}vh`}}
+          className="bg-blue-100 w-5/6 text-black text-3xl text-center mt-80 focus:outline-none leading-[60px] overflow-hidden resize-none" 
         />
-        <div className="w-2/3 h-screen flex flex-col items-center">
+        <div className="w-5/6 h-screen flex flex-col items-center">
         { contentRev && contentRev.map((item, index) => (
             <p 
               key={index} 
               ref={lineRef}
               onMouseOver={() => setLineIndex(index)} 
               onMouseLeave={() => setLineIndex(-1)}
-              className={index===lineIndex ? "text-black p-3 mt-2 text-2xl rounded-md cursor-pointer line-highlight" : "text-black text-2xl p-3 mt-2 cursor-pointer rounded-md"}>
+              className={index===lineIndex ? "text-black p-3 mt-2 text-2xl text-center rounded-md cursor-pointer w-5/6 line-highlight" : "text-black text-2xl p-3 mt-2 text-center cursor-pointer rounded-md w-5/6"}>
               {item.mapValue.fields.msg.stringValue}
             </p>
               
