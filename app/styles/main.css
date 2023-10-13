@@ -43,7 +43,7 @@
 .login-show-up {
     animation: show-up-anim 1s ease;
     animation-fill-mode: forwards;
-    animation-delay: 1.8s;
+    animation-delay: 1.4s;
     z-index: 30;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { initializeApp } from "firebase/app";
 import { 
   getFirestore, 
@@ -22,6 +23,7 @@ export default function Signup() {
     const [msg, setMsg] = useState("");
     const [result, setResult] = useState();
     const [active, setActive] = useState(false);
+    const router = useRouter();
 
     const firebaseConfig = {
         apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -45,7 +47,6 @@ export default function Signup() {
                 setMsg("비밀번호가 일치하지 않습니다");
             else {
                 let query = doc(db, 'content', id);
-                let result;
                 getDoc(query).then(res => setResult(res._document));
             }
         }
@@ -54,10 +55,12 @@ export default function Signup() {
     useEffect(() => {
         if(active) {
             if(result === null) {
-                setMsg("회원가입 진행");
+                setMsg("");
                 setDoc(doc(db, "content", id), {
                     content: [],
-                })
+                    password: pw,
+                }).then(() => router.push('/'))
+                
             }
             else 
                 setMsg("중복된 아이디");
@@ -77,7 +80,6 @@ export default function Signup() {
                 <input value={id} onChange={(e) => setId(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="EMAIL" type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
                 <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PASSWORD" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
                 <input value={pwCheck} onChange={(e) => setPwCheck(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PW CHECK" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
-                {/* <p onClick={handleSignup} onKeyDown={handleSignup} className="w-1/5 text-2xl text-black border-2 border-black mt-12 rounded-md text-center" >SIGN UP</p> */}
                 <p className="text-xl mt-12">{msg}</p>
             </div>
         </div>
