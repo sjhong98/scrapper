@@ -9,8 +9,8 @@ import {
   collection, 
   addDoc,   // 임의의 Id 지정
   setDoc,   // Id 지정 가능
-  updateDoc,   // 수정
-  arrayUnion,
+  updateDoc,   // update document
+  arrayUnion,   // push elem to array
   getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
   deleteDoc, // 삭제
@@ -27,15 +27,12 @@ export default function Home() {
   const [logo, setLogo] = useState("");
   const [content, setContent] = useState([]);
   const [contentRev, setContentRev] = useState([]);
-  const [isKorean, setIsKorean] = useState(false);
-  const [koreanFlag, setKoreanFlag] = useState(0);
   const [lineIndex, setLineIndex] = useState(-1);
   const [result, setResult] = useState();
   const [active, setActive] = useState(false);
   const [msg, setMsg] = useState("");
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
-  const [getDb, setGetDb] = useState(false);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -65,11 +62,13 @@ export default function Home() {
     if(!sessionStorage.getItem('scrapper-login')) 
       loginRef.current.classList.add('login-show-up');
     else {
-      inputContainerRef.current.classList.add('textarea-show-up');
+      setId(sessionStorage.getItem('scrapper-login'));
+      getContentFromDb();
       setTimeout(() => {
+        inputContainerRef.current.classList.add('textarea-show-up');
         inputRef.current.classList.add('textarea-show-up');
         inputRef.current.focus();
-      }, 200);
+      }, 1000);
     }
 
     return () => {
@@ -82,7 +81,7 @@ export default function Home() {
       if(!id || !pw)
         setMsg("모두 입력해주세요");
       else {
-        setGetDb(true);
+        getContentFromDb();
         getDoc(doc(db, 'content', id)).then(res => setResult(res._document));
       }
     }
@@ -95,15 +94,15 @@ export default function Home() {
       else {
         let dbPw = result.data.value.mapValue.fields.password.stringValue;
         if(pw === dbPw) {
+          setMsg("");
+          sessionStorage.setItem('scrapper-login', id);
           loginRef.current.classList.add('login-done');
           inputContainerRef.current.classList.add('textarea-show-up');
-          // sessionStorage.setItem('scrapper-login', true);
           setTimeout(() => {
             inputRef.current.classList.add('textarea-show-up');
             inputRef.current.focus();
           }, 100);
-
-          setContent(result.data.value.mapValue.fields.contents.arrayValue.values);
+          getContentFromDb();
         }
         else 
           setMsg("비밀번호 미일치");
@@ -114,66 +113,37 @@ export default function Home() {
 
   const handleLineDown = (e) => {
     if (e.key === 'Enter') {
-      console.log("입력");
       e.preventDefault(); 
       let value = inputRef.current.innerText;
-      let temp;
-      if(content)
-        temp = [...content];
-      else
-        temp = [];
-
-      if (/[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/.test(value)) {
-        if(/[ㄱ-ㅎㅏ-ㅣ]/.test(value) || /^[가-힣\s]*$/.test(value)) {    // 순수 한글만 포함된 문자열
-          if(isKorean) {
-            setIsKorean(false);
-          }
-          else{   // 순수 한글일 경우 동작
-            console.log(value);
-            let newElem = {likes: [], msg: value};
-            let newData = {
-              contents: arrayUnion(newElem),
-            }
-            temp.push(newElem);
-            updateDoc(doc(db, 'content', id), newData);
-            setGetDb(true);
-            setIsKorean(true);
-            setKoreanFlag(prev => prev+1);
-          }
+      if (/^[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+$/.test(value)) {
+        if(e.nativeEvent.isComposing) {
+          uploadWordToDb(value);
         }
-      }
+      } 
       else {
-        console.log(value);
-        let newElem = {likes: [], msg: value};
-        let newData = {
-          contents: arrayUnion(newElem),
-        }
-        temp.push(newElem);
-        updateDoc(doc(db, 'content', id), newData);
-        setGetDb(true);
+        uploadWordToDb(value);
       }
       inputRef.current.innerText = ''; 
     }
   }
-
-  useEffect(() => {
-    if(koreanFlag === 1) {
-      setIsKorean(false);
+  
+  const uploadWordToDb = (word) => {
+    let newElem = {likes: [], msg: word};
+    let newData = {
+      contents: arrayUnion(newElem),
     }
-  }, [koreanFlag]);
+    updateDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')), newData);
+    getContentFromDb();
+  }
 
-  useEffect(() => {
-    if(getDb) {
-      getDoc(doc(db, 'content', id)).then(res => {
-        setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values)
-      });
-      setGetDb(false);
-    }
-  }, [getDb])
+  const getContentFromDb = async () => {   
+    await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login'))).then(res => {
+      setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
+    });
+  }
 
   useEffect(() => {
     if(content){
-      console.log("get content : ", content);
       let temp = content && [...content].reverse();
       setContentRev(temp);
     }
@@ -196,8 +166,8 @@ export default function Home() {
 
 
       <div ref={inputContainerRef} className="w-screen flex flex-col justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
-        <div 
-          onKeyDown={handleLineDown} 
+        <div
+          onKeyDown={handleLineDown}
           ref={inputRef} 
           contentEditable='true' 
           className="w-2/3 text-black text-3xl text-center mt-80 focus:outline-none leading-[60px] overflow-hidden" 
@@ -209,7 +179,7 @@ export default function Home() {
               ref={lineRef}
               onMouseOver={() => setLineIndex(index)} 
               onMouseLeave={() => setLineIndex(-1)}
-              className={index===lineIndex ? "text-black text-3xl p-3 mt-2 rounded-md cursor-pointer line-highlight" : "text-black text-3xl p-3 mt-2 cursor-pointer rounded-md"}>
+              className={index===lineIndex ? "text-black p-3 mt-2 text-2xl rounded-md cursor-pointer line-highlight" : "text-black text-2xl p-3 mt-2 cursor-pointer rounded-md"}>
               {item.mapValue.fields.msg.stringValue}
             </p>
               
