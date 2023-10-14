@@ -161,7 +161,6 @@ export default function Home() {
       setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
       let likesTemp = [];
       let msgTemp = [];
-      console.log("content : ", res._document.data.value.mapValue.fields.contents.arrayValue.values);
       for(let i=0; i<data.length; i++){
         let splitData = data[i].stringValue.split("+");
         msgTemp.push(splitData[0]);
@@ -187,22 +186,33 @@ export default function Home() {
     getContentFromDb();
   }
 
-  useEffect(() => {
-    console.log(selectedSpans);
-  }, [selectedSpans])
-
   const handleTextSelection = (index) => {
     let startIndex;
     let endIndex;
     let likesRev = [...likesData].reverse();
     let msgRev = [...msgData].reverse();
     const selection = window.getSelection();
+
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
       startIndex = msgRev[selectedIndex].indexOf(selectedText);
       endIndex = startIndex + selectedText.length - 1;
     }
+
+    let testLineBreaks = "";
+    for(let i=0; i<startIndex; i++) {
+      testLineBreaks += msgRev[selectedIndex][i];
+    }
+    let linebreaks = 0;
+    if(testLineBreaks.match(/\\n/g) !== null)
+      linebreaks = testLineBreaks.match(/\\n/g).length;
+
+    if(linebreaks > 0) {
+      startIndex -= linebreaks;
+      endIndex -= linebreaks;
+    } 
+
     let length = endIndex - startIndex;
     let count = startIndex;
 
@@ -210,16 +220,12 @@ export default function Home() {
       likesRev[selectedIndex] = likesRev[selectedIndex] + count.toString() + " ";
       count++;
     }
-    let likesPlusMsg = msgRev[selectedIndex] + "+" + likesRev[selectedIndex];
     
     let test = [];
     for(let i=0; i<content.length; i++) {
       test.push(msgRev[i] + '+' + likesRev[i]);
     }
     let testRev = [...test].reverse();
-
-    // contentRev[selectedIndex] = ob;
-    // let result = [...contentRev].reverse();
     uploadHighlight(testRev);
   };
 
@@ -276,21 +282,21 @@ export default function Home() {
                 { unescapedMsg.split("").map((char, index) => {
                     let changeColor;
                     if(likesCount[index] > 8)
-                      changeColor = '#777';
+                      changeColor = '#FFB508';
                     else if(likesCount[index] >= 7)
-                      changeColor = '#888';
+                      changeColor = '#FFC210';
                     else if(likesCount[index] >= 6)
-                      changeColor = '#999';
+                      changeColor = '#FFCD16';
                     else if(likesCount[index] >= 5)
-                      changeColor = '#aaa';
+                      changeColor = '#FFD91D';
                     else if(likesCount[index] >= 4)
-                      changeColor = '#bbb';
+                      changeColor = '#FFDA39';
                     else if(likesCount[index] >= 3)
-                      changeColor = '#ccc';
+                      changeColor = '#FFE06A';
                     else if(likesCount[index] >= 2)
-                      changeColor = '#ddd';
+                      changeColor = '#FFE188';
                     else if(likesCount[index] >= 1)
-                      changeColor = '#eee';
+                      changeColor = '#FFEBAE';
                     else 
                       changeColor = '#FFF'
 
