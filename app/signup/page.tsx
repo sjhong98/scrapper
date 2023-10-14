@@ -55,12 +55,11 @@ export default function Signup() {
     useEffect(() => {
         if(active) {
             if(result === null) {
+                const newData = {};
+                const newDocRef = collection(db, id); // 새로운 컬렉션 참조 생성
+                setDoc(newDocRef, newData)
+                .then(() => router.push('/'))
                 setMsg("");
-                setDoc(doc(db, "content", id), {
-                    content: [],
-                    password: pw,
-                }).then(() => router.push('/'))
-                
             }
             else 
                 setMsg("중복된 아이디");

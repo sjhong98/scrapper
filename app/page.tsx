@@ -7,12 +7,11 @@ import { initializeApp } from "firebase/app";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { 
   getFirestore, 
-  collection, 
-  addDoc,   // 임의의 Id 지정
-  setDoc,   // Id 지정 가능
+  // addDoc,   // 임의의 Id 지정
+  // setDoc,   // Id 지정 가능
   updateDoc,   // update document
   arrayUnion,   // push elem to array
-  getDocs,  // 전체 읽어오기
+  // getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
   deleteDoc, // 삭제
   doc       // 특정 데이터 읽기
@@ -36,7 +35,13 @@ export default function Home() {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
-  const [textareaHeight, setTextareaHeight] = useState(4);
+  const [textareaHeight, setTextareaHeight] = useState(10);
+  const [selectedIndex, setSelectedIndex] = useState(-1);;
+  const [selectedSpans, setSelectedSpans] = useState([]);
+  const [likesData, setLikesData] = useState([]);
+  const [msgData, setMsgData] = useState([]);
+  const [startIndex, setStartIndex] = useState();
+  const [endIndex, setEndIndex] = useState();
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -112,7 +117,7 @@ export default function Home() {
       logoRef.current.classList.remove('available-to-upload');
       logoRef.current.classList.add('not-available-to-upload');
     }
-    setTextareaHeight((12 + writing.match(/\n/g) || []).length * 3.5);
+    setTextareaHeight((10 + writing.match(/\n/g) || []).length * 3.5);    // textarea height 조절
   }, [writing])
 
   useEffect(() => {
@@ -138,40 +143,85 @@ export default function Home() {
     }
     setActive(true);
   }, [result]);
-
-  
-
-  // const handleKeyDown = (e) => {
-  //   if (e.key === 'Enter') {
-  //     e.preventDefault(); 
-  //     console.log("줄바꿈");
-  //     setTextareaHeight(prev => prev + 4);
-  //   }
-  // }
   
   const uploadWordToDb = (word) => {
-    let newElem = {likes: [], msg: word};
-    let newData = {
-      contents: arrayUnion(newElem),
-    }
-    updateDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')), newData);
+    let newData = word.replace(/\n/g, "\\n") + "+ " + " ";
+    
+    const documentRef =  doc(db, "content", id);
+    updateDoc(documentRef, {
+      contents: arrayUnion(newData + "+" + " ")
+    })
     getContentFromDb();
     setWriting("");
   }
 
   const getContentFromDb = async () => {   
     await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login'))).then(res => {
+      let data = res._document.data.value.mapValue.fields.contents.arrayValue.values;
       setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
-      console.log(res._document.data.value.mapValue.fields.contents.arrayValue.values[0].mapValue.fields.likes.arrayValue.values.length);  // .mapValue.fields.likes.arrayValue.value
+      let likesTemp = [];
+      let msgTemp = [];
+      console.log("content : ", res._document.data.value.mapValue.fields.contents.arrayValue.values);
+      for(let i=0; i<data.length; i++){
+        let splitData = data[i].stringValue.split("+");
+        msgTemp.push(splitData[0]);
+        likesTemp.push(splitData[1]);
+      }
+      setMsgData(msgTemp);
+      setLikesData(likesTemp);
     });
   }
 
   useEffect(() => {
-    if(content){
-      let temp = content && [...content].reverse();
+    if(msgData){
+      let temp = msgData && [...msgData].reverse();
       setContentRev(temp);
     }
-  }, [content]);
+  }, [msgData]);
+
+  const uploadHighlight = (res) => {
+    const documentRef = doc(db, 'content', id);
+    updateDoc(documentRef, {
+      contents: res
+    });
+    getContentFromDb();
+  }
+
+  useEffect(() => {
+    console.log(selectedSpans);
+  }, [selectedSpans])
+
+  const handleTextSelection = (index) => {
+    let startIndex;
+    let endIndex;
+    let likesRev = [...likesData].reverse();
+    let msgRev = [...msgData].reverse();
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const selectedText = range.toString();
+      startIndex = msgRev[selectedIndex].indexOf(selectedText);
+      endIndex = startIndex + selectedText.length - 1;
+    }
+    let length = endIndex - startIndex;
+    let count = startIndex;
+
+    for(let i=0; i<length+1; i++) {
+      likesRev[selectedIndex] = likesRev[selectedIndex] + count.toString() + " ";
+      count++;
+    }
+    let likesPlusMsg = msgRev[selectedIndex] + "+" + likesRev[selectedIndex];
+    
+    let test = [];
+    for(let i=0; i<content.length; i++) {
+      test.push(msgRev[i] + '+' + likesRev[i]);
+    }
+    let testRev = [...test].reverse();
+
+    // contentRev[selectedIndex] = ob;
+    // let result = [...contentRev].reverse();
+    uploadHighlight(testRev);
+  };
 
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex-col justify-center items-center">
@@ -199,23 +249,59 @@ export default function Home() {
         <textarea
           value={writing}
           onChange={(e) => setWriting(e.target.value)}
-          // onKeyDown={handleKeyDown}
           ref={inputRef} 
           style={{height:`${textareaHeight}vh`}}
-          className="bg-blue-100 w-5/6 text-black text-3xl text-center mt-80 focus:outline-none leading-[60px] overflow-hidden resize-none" 
+          className="w-5/6 text-black text-3xl text-center mt-80 focus:outline-none leading-[60px] overflow-hidden resize-none" 
         />
         <div className="w-5/6 h-screen flex flex-col items-center">
-        { contentRev && contentRev.map((item, index) => (
-            <p 
-              key={index} 
-              ref={lineRef}
-              onMouseOver={() => setLineIndex(index)} 
-              onMouseLeave={() => setLineIndex(-1)}
-              className={index===lineIndex ? "text-black p-3 mt-2 text-2xl text-center rounded-md cursor-pointer w-5/6 line-highlight" : "text-black text-2xl p-3 mt-2 text-center cursor-pointer rounded-md w-5/6"}>
-              {item.mapValue.fields.msg.stringValue}
-            </p>
-              
-        ))}
+        {contentRev && contentRev.map((item, index) => {
+            const unescapedMsg = item.replace(/\\n/g, "\n");
+            let likesRev = [...likesData].reverse();
+            let likes = likesRev[index].split(" ");
+            let likesCount = [];
+            for(let i=0; i<unescapedMsg.length; i++) 
+              likesCount[i] = 0;
+            for(let i=0; i<likes.length; i++) {
+              likesCount[likes[i]] = likesCount[likes[i]] + 1;
+            }
+              return (
+                <p 
+                  key={index} 
+                  ref={lineRef}
+                  onMouseOver={() => {setLineIndex(index); setSelectedIndex(index)}} 
+                  onMouseLeave={() => setLineIndex(-1)}
+                  style={{ whiteSpace: 'pre-wrap' }}
+                  className={index === lineIndex ? "text-black p-3 mt-2 text-2xl text-center rounded-md w-5/6 line-highlight" : "text-black text-2xl p-3 mt-2 text-center rounded-md w-5/6"}
+                >
+                { unescapedMsg.split("").map((char, index) => {
+                    let changeColor;
+                    if(likesCount[index] > 8)
+                      changeColor = '#777';
+                    else if(likesCount[index] >= 7)
+                      changeColor = '#888';
+                    else if(likesCount[index] >= 6)
+                      changeColor = '#999';
+                    else if(likesCount[index] >= 5)
+                      changeColor = '#aaa';
+                    else if(likesCount[index] >= 4)
+                      changeColor = '#bbb';
+                    else if(likesCount[index] >= 3)
+                      changeColor = '#ccc';
+                    else if(likesCount[index] >= 2)
+                      changeColor = '#ddd';
+                    else if(likesCount[index] >= 1)
+                      changeColor = '#eee';
+                    else 
+                      changeColor = '#FFF'
+
+                    return (
+                      <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                    )
+                  })
+                }
+                </p>
+              );
+          })}
         </div>
       </div>
       
