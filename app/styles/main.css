@@ -27,10 +27,19 @@
 
 @keyframes highlight-anim {
     from {
+        font-size: 20px;
+    }
+    to {
+        font-size: 24px;
+    }
+}
+
+@keyframes un-highlight-anim {
+    from {
         font-size: 24px;
     }
     to {
-        font-size: 28px;
+        font-size: 20px;
     }
 }
 
@@ -77,6 +86,38 @@
     to {
         transform: scale(1);
     }
+}
+
+@keyframes scale-up-anim {
+    from {
+        transform: scale(1);
+        color: gray;
+    }
+    to {
+        transform: scale(1.1);
+        color: black;
+    }
+}
+
+@keyframes scale-down-anim {
+    from {
+        transform: scale(1.1);
+        color: black;
+    }
+    to {
+        transform: scale(1);
+        color: gray;
+    }
+}
+
+.scale-up {
+    animation: scale-up-anim 0.3s ease;
+    animation-fill-mode: forwards;
+}
+
+.scale-down {
+    animation: scale-down-anim 0.3s ease;
+    animation-fill-mode: forwards;
 }
 
 .logo-over {
@@ -126,6 +167,11 @@
 
 .line-highlight {
     animation: highlight-anim 0.3s ease;
+    animation-fill-mode: forwards;
+}
+
+.line-un-highlight {
+    animation: un-highlight-anim 0.3s ease;
     animation-fill-mode: forwards;
 }
 

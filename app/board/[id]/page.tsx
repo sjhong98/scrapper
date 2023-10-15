@@ -19,9 +19,9 @@ import {
   doc       // 특정 데이터 읽기
  } from "firebase/firestore";
 
-import './styles/main.css';
+import '../../styles/main.css';
 
-export default function Home() {
+export default function Board(params) {
   const inputRef = useRef();
   const lineRef = useRef();
   const logoRef = useRef();
@@ -40,9 +40,6 @@ export default function Home() {
   const [active, setActive] = useState(false);
   const [msg, setMsg] = useState("");
   const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
-  const [writing, setWriting] = useState("");
-  const [textareaHeight, setTextareaHeight] = useState(10);
   const [selectedIndex, setSelectedIndex] = useState(-1);;
   const [likesData, setLikesData] = useState([]);
   const [msgData, setMsgData] = useState([]);
@@ -63,7 +60,7 @@ export default function Home() {
 
   useEffect(() => {
     let i = 0;
-    let ch = "SSCRAPPER";
+    let ch = params.params.id[0] + params.params.id;
 
     const typeLogo = setInterval(() => {
       if (i < ch.length-1) {
@@ -74,59 +71,15 @@ export default function Home() {
       }
     }, 120);
 
-    if(!sessionStorage.getItem('scrapper-login')) 
-      loginRef.current.classList.add('login-show-up');
-    else {
-      setId(sessionStorage.getItem('scrapper-login'));
-      getContentFromDb();
-      setTimeout(() => {
-        inputContainerRef.current.classList.add('textarea-show-up');
-        inputRef.current.classList.add('textarea-show-up');
-        menuRef.current.classList.add('textarea-show-up');
-        inputRef.current.focus();
-      }, 1000);
-    }
+    inputContainerRef.current.classList.add('textarea-show-up');
+    menuRef.current.classList.add('textarea-show-up');
+    setId(params.params.id);
+    getContentFromDb();
 
     return () => {
       clearInterval(typeLogo);    // 렌더링될때마다 setInterval 활성화되는 것 방지
     };
-  }, []);
-
-  useEffect(() => {
-    if(writing !== "") {
-      logoRef.current.classList.remove('not-available-to-upload');
-      logoRef.current.classList.add('available-to-upload');
-    }
-    else {
-      logoRef.current.classList.remove('available-to-upload');
-      logoRef.current.classList.add('not-available-to-upload');
-    }
-    setTextareaHeight((10 + writing.match(/\n/g) || []).length * 3.5);    // textarea height 조절
-  }, [writing])
-
-  useEffect(() => {
-    if(active) {
-      if(result === null)
-        setMsg("존재하지 않는 아이디");
-      else {
-        let dbPw = result.data.value.mapValue.fields.password.stringValue;
-        if(pw === dbPw) {
-          setMsg("");
-          sessionStorage.setItem('scrapper-login', id);
-          loginRef.current.classList.add('login-done');
-          inputContainerRef.current.classList.add('textarea-show-up');
-          setTimeout(() => {
-            inputRef.current.classList.add('textarea-show-up');
-            inputRef.current.focus();
-          }, 100);
-          getContentFromDb();
-        }
-        else 
-          setMsg("비밀번호 미일치");
-      }
-    }
-    setActive(true);
-  }, [result]);
+  }, [])
 
   useEffect(() => {
     if(msgData){
@@ -135,48 +88,9 @@ export default function Home() {
     }
   }, [msgData]);
 
-  const handleLogin = async (e) => {
-    if(e.key === 'Enter') {   // 엔터가 눌렸을 때에만 반응
-      if(!id || !pw)
-        setMsg("모두 입력해주세요");
-      else {
-        getContentFromDb();
-        getDoc(doc(db, 'content', id)).then(res => setResult(res._document));
-      }
-    }
-  };
-
-  const handleLogoOver = () => {
-    logoRef.current.classList.add('font-black');
-  }
-
-  const handleLogoOut = () => {
-    logoRef.current.classList.remove('font-black');
-  }
-
-  const handleLogoClick = () => {
-    uploadWordToDb(writing);
-  }
-  
-  const uploadWordToDb = (word) => {
-    let newData = word.replace(/\n/g, "\\n") + "+" + " ";
-    let newDataWithId = word.replace(/\n/g, "\\n") + "+" + " " + "+" + id;
-    
-    const documentRef =  doc(db, "content", id);
-    const documentRef2 = doc(db, "main", "data");
-    updateDoc(documentRef, {
-      contents: arrayUnion(newData),
-    })
-
-    updateDoc(documentRef2, {
-      contents: arrayUnion(newDataWithId),
-    })
-    getContentFromDb();
-    setWriting("");
-  }
 
   const getContentFromDb = async () => {   
-    await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')))
+    await getDoc(doc(db, 'content', params.params.id))
     .then(res => {
       let data = res._document.data.value.mapValue.fields.contents.arrayValue.values;
       setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
@@ -245,13 +159,9 @@ export default function Home() {
 
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
-      <div className="h-1/6 w-1/2 flex justify-center items-center fixed transform translate-y-80 top-0 z-40 logo-move-up">
+      <div className="h-1/6 w-1/2 flex justify-center items-center fixed top-0 z-40">
         <p 
-          onMouseOver={handleLogoOver}
-          onMouseOut={handleLogoOut}
-          onClick={handleLogoClick}
-          ref={logoRef} 
-          className="tracking-[-5px] text-gray-500 text-8xl border-r-4 border-black pr-[15px] cursor-pointer" 
+          className="tracking-[-5px] text-black text-8xl border-r-4 border-black pr-[15px] cursor-pointer" 
           style={{fontFamily:'lemon-r'}}>
             {logo}
         </p>
@@ -262,23 +172,8 @@ export default function Home() {
           <PersonIcon ref={myRef} onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
       </div>
 
-      <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
-        <input placeholder="EMAIL" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
-        <input placeholder="PW" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
-        <p className="text-xl mt-12">{msg}</p>
-        <a className="text-xl mt-12" href='/signup' >or  SIGN UP</a>
-      </div>
-
-
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
-        <textarea
-          value={writing}
-          onChange={(e) => setWriting(e.target.value)}
-          ref={inputRef} 
-          style={{height:`${textareaHeight}vh`}}
-          className="w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none leading-[100px] overflow-hidden resize-none" 
-        />
-        <div className="w-5/6 h-screen flex flex-col items-center">
+        <div className="w-5/6 mt-32 h-screen flex flex-col items-center">
         {contentRev && contentRev.map((item, index) => {
             const unescapedMsg = item.replace(/\\n/g, "\n");
             let likesRev = [...likesData].reverse();
