@@ -17,6 +17,7 @@ import {
   getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
   deleteDoc, // 삭제
+  collection,
   doc       // 특정 데이터 읽기
  } from "firebase/firestore";
 
@@ -179,48 +180,44 @@ export default function Home() {
   }
 
   const getContentFromDb = async () => {   
-    await getFontOverrideCss
-    await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')))
+    await getDocs(collection(db, 'posts'))
     .then(res => {
-      let data = res._document.data.value.mapValue.fields.contents.arrayValue.values;
-      setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
-      let likesTemp = [];
-      let msgTemp = [];
-      for(let i=0; i<data.length; i++){
-        let splitData = data[i].stringValue.split("+");
-        msgTemp.push(splitData[0]);
-        likesTemp.push(splitData[1]);
-      }
-      setMsgData(msgTemp);
-      setLikesData(likesTemp);
-    });
+      let temp = [];
+      res.forEach(doc => {
+        let docTemp = doc.data();
+        docTemp.postId = doc.id;
+        temp.push(docTemp);
+      });    
+      setPostList(temp.reverse());
+    })
   }
 
-  const uploadHighlight = (res) => {
-    const documentRef = doc(db, 'content', id);
+  const uploadHighlight = (postId, newLikes) => {
+
+    const documentRef = doc(db, 'posts', postId);
     updateDoc(documentRef, {
-      contents: res
+      posts: newLikes
     });
     getContentFromDb();
   }
 
-  const handleTextSelection = (index) => {
+  const handleTextSelection = (postId) => {
     let startIndex;
     let endIndex;
-    let likesRev = [...likesData].reverse();
-    let msgRev = [...msgData].reverse();
+    const findObj = postList.find(item => item.postId === selectedIndex);
+
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
-      startIndex = msgRev[selectedIndex].indexOf(selectedText);
+      startIndex = findObj.msg.indexOf(selectedText);
       endIndex = startIndex + selectedText.length - 1;
     }
 
-    let testLineBreaks = "";
+    let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
     for(let i=0; i<startIndex; i++) {
-      testLineBreaks += msgRev[selectedIndex][i];
+      testLineBreaks += findObj.msg[i];
     }
     let linebreaks = 0;
     if(testLineBreaks.match(/\\n/g) !== null)
@@ -235,16 +232,11 @@ export default function Home() {
     let count = startIndex;
 
     for(let i=0; i<length+1; i++) {
-      likesRev[selectedIndex] = likesRev[selectedIndex] + count.toString() + " ";
+      findObj.likes = findObj.likes + count.toString() + " ";
       count++;
     }
-    
-    let test = [];
-    for(let i=0; i<content.length; i++) {
-      test.push(msgRev[i] + '+' + likesRev[i]);
-    }
-    let testRev = [...test].reverse();
-    uploadHighlight(testRev);
+
+    uploadHighlight(postId, findObj.likes);
   };
 
   return (
@@ -284,45 +276,36 @@ export default function Home() {
           className="w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none leading-[100px] overflow-hidden resize-none" 
         />
         <div className="w-5/6 h-screen flex flex-col items-center">
-        {contentRev && contentRev.map((item, index) => {
-            const unescapedMsg = item.replace(/\\n/g, "\n");
-            let likesRev = [...likesData].reverse();
-            let likes = likesRev[index].split(" ");
+        { postList.map((item, index) => {
+            const unescapedMsg = item.msg.replace(/\\n/g, "\n");
+            
+            // 좋아요 정보 시각화 로직
             let likesCount = [];
-            for(let i=0; i<unescapedMsg.length; i++) 
+            for(let i=0; i<unescapedMsg.length; i++)  // 초기화
               likesCount[i] = 0;
-            for(let i=0; i<likes.length; i++) {
-              likesCount[likes[i]] = likesCount[likes[i]] + 1;
+            for(let i=0; i<item.likes.length; i++) { // 드래그된 부분의 숫자 증가
+              likesCount[item.likes[i]] = likesCount[item.likes[i]] + 1;
             }
               return (
                 <p 
                   key={index} 
                   ref={lineRef}
-                  onMouseOver={() => {setLineIndex(index); setSelectedIndex(index)}} 
+                  onMouseOver={() => {setLineIndex(index); setSelectedIndex(item.postId)}} 
                   onMouseLeave={() => setLineIndex(-1)}
                   style={{ whiteSpace: 'pre-wrap' }}
                   className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
                 >
                 { unescapedMsg.split("").map((char, index) => {
                     let changeColor;
-                    if(likesCount[index] > 8)
-                      changeColor = '#A6A6A6';
-                    else if(likesCount[index] >= 7)
-                      changeColor = '#ADADAD';
-                    else if(likesCount[index] >= 6)
-                      changeColor = '#B5B5B5';
-                    else if(likesCount[index] >= 5)
-                      changeColor = '#BFBFBF';
-                    else if(likesCount[index] >= 4)
-                      changeColor = '#CCCCCC';
-                    else if(likesCount[index] >= 3)
-                      changeColor = '#D9D9D9';
-                    else if(likesCount[index] >= 2)
-                      changeColor = '#E6E6E6';
-                    else if(likesCount[index] >= 1)
-                      changeColor = '#F2F2F2';
-                    else 
-                      changeColor = '#FFF'
+                    if(likesCount[index] > 8) changeColor = '#A6A6A6';
+                    else if(likesCount[index] >= 7) changeColor = '#ADADAD';
+                    else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
+                    else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
+                    else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
+                    else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
+                    else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
+                    else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
+                    else changeColor = '#FFF'
 
                     return (
                       <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
