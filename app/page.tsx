@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
 import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { 
   getFirestore, 
   // addDoc,   // 임의의 Id 지정
   // setDoc,   // Id 지정 가능
   updateDoc,   // update document
   arrayUnion,   // push elem to array
-  // getDocs,  // 전체 읽어오기
+  getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
   deleteDoc, // 삭제
   doc       // 특정 데이터 읽기
@@ -28,8 +29,6 @@ export default function Home() {
   const inputContainerRef = useRef();
   const loginRef = useRef();
   const menuRef = useRef();
-  const homeRef = useRef();
-  const myRef = useRef();
   const router = useRouter();
 
   const [logo, setLogo] = useState("");
@@ -48,6 +47,9 @@ export default function Home() {
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
+  const [menuLogoutOver, setMenuLogoutOver] = useState(false);
+
+  const [postList, setPostList] = useState([]);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -104,7 +106,7 @@ export default function Home() {
     setTextareaHeight((10 + writing.match(/\n/g) || []).length * 3.5);    // textarea height 조절
   }, [writing])
 
-  useEffect(() => {
+  useEffect(() => {     // 로그인
     if(active) {
       if(result === null)
         setMsg("존재하지 않는 아이디");
@@ -115,6 +117,7 @@ export default function Home() {
           sessionStorage.setItem('scrapper-login', id);
           loginRef.current.classList.add('login-done');
           inputContainerRef.current.classList.add('textarea-show-up');
+          menuRef.current.classList.add('textarea-show-up');
           setTimeout(() => {
             inputRef.current.classList.add('textarea-show-up');
             inputRef.current.focus();
@@ -176,6 +179,7 @@ export default function Home() {
   }
 
   const getContentFromDb = async () => {   
+    await getFontOverrideCss
     await getDoc(doc(db, 'content', sessionStorage.getItem('scrapper-login')))
     .then(res => {
       let data = res._document.data.value.mapValue.fields.contents.arrayValue.values;
@@ -258,8 +262,9 @@ export default function Home() {
       </div>
 
       <div className="right-0 mr-12 mt-12 opacity-0 fixed top-0 cursor-pointer flex flex-col" style={{zIndex:9999}} ref={menuRef} >
-          <HomeIcon ref={homeRef} onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
-          <PersonIcon ref={myRef} onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
+          <HomeIcon onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
+          <PersonIcon onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
+          <LogoutIcon onClick={()=>{sessionStorage.clear(); window.location.reload()}} onMouseOver={()=>setMenuLogoutOver(true)} onMouseLeave={()=>setMenuLogoutOver(false)} className={menuLogoutOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
       </div>
 
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
