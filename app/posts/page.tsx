@@ -28,6 +28,8 @@ export default function Posts() {
     const [userData, setUserData] = useState([]);
     const [lineIndex, setLineIndex] = useState(-1);
     const router = useRouter();
+    const [menuHomeOver, setMenuHomeOver] = useState(false);
+    const [menuMyOver, setMenuMyOver] = useState(false);
 
     const firebaseConfig = {
         apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -54,8 +56,6 @@ export default function Posts() {
                 })
                 setMsgData([...tempMsg].reverse());
                 setUserData([...tempUser].reverse());
-                console.log([...tempUser].reverse());
-
             })
         })
     }, [])
@@ -70,19 +70,27 @@ export default function Posts() {
                     SCRAPPER
                 </p>
             </div>
+
+            <div className="right-0 mr-12 mt-12 opacity-1 fixed top-0 cursor-pointer flex flex-col" style={{zIndex:9999}} >
+                <HomeIcon onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
+                <PersonIcon onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
+            </div>
+
             <div className="w-5/6 h-screen">
                 <div className="h-1/5" />
                 <div className="h-auto flex flex-col justify-center items-center">
                     { msgData.map((res, index) => {
+                        const unescapedMsg = res.replace(/\\n/g, "\n")
 
                         return (
                             <p 
                                 key={index} 
-                                className={index === lineIndex ? 'mt-12 text-[20px] line-highlight font-thin' : 'mt-12 text-[20px] line-un-highlight font-thin'}
+                                style={{ whiteSpace: 'pre-line' }}
+                                className={index === lineIndex ? 'mt-12 text-[20px] line-highlight font-thin text-center' : 'mt-12 text-[20px] line-un-highlight font-thin text-center'}
                                 onMouseOver={() => {setLineIndex(index)}} 
                                 onMouseLeave={() => setLineIndex(-1)}
                                 onClick={() => {router.push(`/board/${userData[index]}`)}}
-                                >{res}</p>
+                                >{unescapedMsg}</p>
                         )
                     })
                     }
