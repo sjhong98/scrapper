@@ -46,26 +46,25 @@ export default function Signup() {
             else if(pw !== pwCheck) 
                 setMsg("비밀번호가 일치하지 않습니다");
             else {
-                let query = doc(db, 'content', id);
-                getDoc(query).then(res => setResult(res._document));
+                let query = doc(db, 'accounts', id);
+                getDoc(query).then(res => {
+                    console.log(res.data())
+                    if(res.data() === undefined) {
+                        const newDocRef = doc(db, 'accounts', id); 
+                        setDoc(newDocRef, {
+                            password: pw,
+                            scrap: []
+                        })
+                        .then(() => router.push('/'));
+                        sessionStorage.setItem('scrapper-login', id);
+                        setMsg("");
+                    }
+                    else 
+                        setMsg("중복된 아이디");
+                });
             }
         }
     }
-
-    useEffect(() => {
-        if(active) {
-            if(result === null) {
-                const newData = {};
-                const newDocRef = collection(db, id); // 새로운 컬렉션 참조 생성
-                setDoc(newDocRef, newData)
-                .then(() => router.push('/'))
-                setMsg("");
-            }
-            else 
-                setMsg("중복된 아이디");
-        }
-        setActive(true);
-    }, [result]);
     
     return (
         <div className="w-screen h-screen bg-white flex flex-col">

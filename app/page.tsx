@@ -50,6 +50,7 @@ export default function Home() {
   const [menuMyOver, setMenuMyOver] = useState(false);
   const [menuScrapOver, setMenuScrapOver] = useState(false);
   const [menuLogoutOver, setMenuLogoutOver] = useState(false);
+  const [showId, setShowId] = useState(false);
   const previousTime = new Date('2023-10-15T12:00:00');
 
   const [postList, setPostList] = useState([]);
@@ -306,7 +307,7 @@ export default function Home() {
           <DashboardIcon onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
           <HomeIcon onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
           <StarIcon onClick={()=>router.push('/scrap')} onMouseOver={()=>setMenuScrapOver(true)} onMouseLeave={()=>setMenuScrapOver(false)} className={menuScrapOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
-          <LogoutIcon onClick={()=>{sessionStorage.clear(); window.location.reload()}} onMouseOver={()=>setMenuLogoutOver(true)} onMouseLeave={()=>setMenuLogoutOver(false)} className={menuLogoutOver ? "scale-up" : "scale-down"} sx={{fontSize:40, marginLeft:'8px', color:'black', marginTop:'3vh'}} />
+          <LogoutIcon onClick={()=>{sessionStorage.clear(); window.location.reload()}} onMouseOver={()=>{setShowId(true); setMenuLogoutOver(true);}} onMouseLeave={()=>{setShowId(false); setMenuLogoutOver(false);}} className={menuLogoutOver ? "scale-up" : "scale-down"} sx={{fontSize:40, marginLeft:'8px', color:'black', marginTop:'3vh'}} />
       </div>
 
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
