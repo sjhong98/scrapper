@@ -6,9 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
 import HomeIcon from '@mui/icons-material/Home';
-import PersonIcon from '@mui/icons-material/Person';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import StarIcon from '@mui/icons-material/Star';
 import { 
   getFirestore, 
+  query,
+  orderBy,
   // addDoc,   // 임의의 Id 지정
   // setDoc,   // Id 지정 가능
   updateDoc,   // update document
@@ -45,6 +48,7 @@ export default function Board(params) {
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
+  const [menuScrapOver, setMenuScrapOver] = useState(false);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -89,8 +93,8 @@ export default function Board(params) {
 
 
   const getContentFromDb = async () => {   
-    console.log("done");
-    await getDocs(collection(db, 'posts'))
+    let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
+    await getDocs(q)
     .then(res => {
       let temp = [];
       res.forEach(doc => {
@@ -100,7 +104,7 @@ export default function Board(params) {
           temp.push(docTemp);
         }
       });    
-      setPostList(temp.reverse());
+      setPostList(temp);
     })
   }
 
@@ -163,8 +167,9 @@ export default function Board(params) {
       </div>
 
       <div className="right-0 mr-12 mt-12 opacity-0 fixed top-0 cursor-pointer flex flex-col" style={{zIndex:9999}} ref={menuRef} >
-          <HomeIcon ref={homeRef} onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
-          <PersonIcon ref={myRef} onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
+          <DashboardIcon ref={homeRef} onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
+          <HomeIcon ref={myRef} onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
+          <StarIcon onClick={()=>router.push('/scrap')} onMouseOver={()=>setMenuScrapOver(true)} onMouseLeave={()=>setMenuScrapOver(false)} className={menuScrapOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
       </div>
 
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">

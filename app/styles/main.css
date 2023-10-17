@@ -94,14 +94,14 @@
         color: gray;
     }
     to {
-        transform: scale(1.1);
+        transform: scale(1.07);
         color: black;
     }
 }
 
 @keyframes scale-down-anim {
     from {
-        transform: scale(1.1);
+        transform: scale(1.07);
         color: black;
     }
     to {

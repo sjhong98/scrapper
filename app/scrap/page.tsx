@@ -25,13 +25,14 @@ import {
 
 import '../styles/main.css';
 
-export default function Posts() {
+export default function Scrap() {
     const router = useRouter();
     const [postList, setPostList] = useState([]);
     const [lineIndex, setLineIndex] = useState(-1);
     const [menuHomeOver, setMenuHomeOver] = useState(false);
     const [menuMyOver, setMenuMyOver] = useState(false);
     const [selectedId, setSelectedId] = useState("");
+    const [id, setId] = useState(sessionStorage.getItem('scrapper-login'));
     const [menuScrapOver, setMenuScrapOver] = useState(false);
 
     const firebaseConfig = {
@@ -50,18 +51,27 @@ export default function Posts() {
         getContentFromDb();
     }, []);
 
-    const getContentFromDb = async () => {   
+    const getContentFromDb = async () => {
+        let scrap = [];   
+        await getDoc(doc(db, 'accounts', id))
+        .then(res => {
+            scrap = res.data().scrap;
+        })
         let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
         await getDocs(q)
         .then(res => {
           let temp = [];
           res.forEach(doc => {
             let docTemp = doc.data();
-            docTemp.postId = doc.id;
-            temp.push(docTemp);
+            for(let i=0; i<scrap.length; i++) {
+                if(doc.id === scrap[i]) {
+                    docTemp.postId = doc.id;
+                    temp.push(docTemp);
+                    break;
+                }
+            }
           });    
           setPostList(temp);
-          console.log(temp);
         })
       }
 
