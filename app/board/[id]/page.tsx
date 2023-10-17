@@ -12,39 +12,28 @@ import {
   getFirestore, 
   query,
   orderBy,
-  // addDoc,   // 임의의 Id 지정
-  // setDoc,   // Id 지정 가능
   updateDoc,   // update document
-  arrayUnion,   // push elem to array
   getDocs,  // 전체 읽어오기
-  getDoc,   // 문서 하나 읽어오기
-  deleteDoc, // 삭제
   doc,       // 특정 데이터 읽기
   collection
  } from "firebase/firestore";
 
 import '../../styles/main.css';
 
-export default function Board(params) {
-  const inputRef = useRef();
-  const lineRef = useRef();
-  const logoRef = useRef();
-  const inputContainerRef = useRef();
-  const loginRef = useRef();
-  const menuRef = useRef();
-  const homeRef = useRef();
-  const myRef = useRef();
+export default function Board(params: any) {
+  const lineRef = useRef<HTMLDivElement | null>(null);
+  const inputContainerRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const homeRef = useRef<SVGSVGElement | null>(null);
+  const myRef = useRef<SVGSVGElement | null>(null);
   const router = useRouter();
 
   const [logo, setLogo] = useState("");
-  const [content, setContent] = useState([]);
   const [contentRev, setContentRev] = useState([]);
   const [lineIndex, setLineIndex] = useState(-1);
-  const [postList, setPostList] = useState([]);
-  const [msg, setMsg] = useState("");
+  const [postList, setPostList] = useState<Document[]>([]);
   const [id, setId] = useState(params.params.id);
-  const [selectedId, setselectedId] = useState(-1);;
-  const [likesData, setLikesData] = useState([]);
+  const [selectedId, setselectedId] = useState<string>("");;
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
@@ -75,8 +64,8 @@ export default function Board(params) {
       }
     }, 120);
 
-    inputContainerRef.current.classList.add('textarea-show-up');
-    menuRef.current.classList.add('textarea-show-up');
+    inputContainerRef.current && inputContainerRef.current.classList.add('textarea-show-up');
+    menuRef.current && menuRef.current.classList.add('textarea-show-up');
     getContentFromDb();
 
     return () => {
@@ -96,19 +85,19 @@ export default function Board(params) {
     let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
     await getDocs(q)
     .then(res => {
-      let temp = [];
+      let temp: Document[] = [];
       res.forEach(doc => {
         let docTemp = doc.data();
         if(docTemp.user === id) {
           docTemp.postId = doc.id;
-          temp.push(docTemp);
+          temp.push(docTemp as Document);
         }
       });    
       setPostList(temp);
     })
   }
 
-  const uploadLikes= (postId, newLikes) => {
+  const uploadLikes= (postId: string, newLikes: string) => {
     console.log(postId, newLikes)
 
     const documentRef = doc(db, 'posts', postId);
@@ -118,14 +107,15 @@ export default function Board(params) {
     getContentFromDb();
   }
 
-  const handleTextSelection = (postId) => {
+  const handleTextSelection = () => {
     let startIndex;
     let endIndex;
-    const findObj = postList.find(item => item.postId === selectedId);
+    console.log(postList);
+    const findObj = postList.find((item: any) => (item as any).postId === selectedId) as any;
 
     const selection = window.getSelection();
 
-    if (selection.rangeCount > 0) {
+    if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
       startIndex = findObj.msg.indexOf(selectedText);
@@ -137,21 +127,27 @@ export default function Board(params) {
       testLineBreaks += findObj.msg[i];
     }
     let linebreaks = 0;
-    if(testLineBreaks.match(/\\n/g) !== null)
-      linebreaks = testLineBreaks.match(/\\n/g).length;
+    const matches = testLineBreaks.match(/\\n/g);
+    if (matches !== null) {
+      linebreaks = matches.length;
+    }
 
     if(linebreaks > 0) {
       startIndex -= linebreaks;
-      endIndex -= linebreaks;
+      if(endIndex !== undefined)
+        endIndex -= linebreaks;
     } 
 
-    let length = endIndex - startIndex;
+    let length
+    if(endIndex !== undefined)
+      length = endIndex - startIndex;
     let count = startIndex;
 
-    for(let i=0; i<length+1; i++) {
-      findObj.likes = findObj.likes + count.toString() + " ";
-      count++;
-    }
+    if(length !== undefined)
+      for(let i=0; i<length+1; i++) {
+        findObj.likes = findObj.likes + count.toString() + " ";
+        count++;
+      }
 
     uploadLikes(selectedId, findObj.likes);
   };
@@ -174,11 +170,11 @@ export default function Board(params) {
 
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
         <div className="w-5/6 mt-32 h-screen flex flex-col items-center">
-        { postList.map((item, index) => {
+        { postList.map((item: any, index: number) => {
             const unescapedMsg = item.msg.replace(/\\n/g, "\n");
             
             // 좋아요 정보 시각화 로직
-            let likesCount = [];
+            let likesCount:any = [];
             let likes = item.likes.split(" ");
             for(let i=0; i<unescapedMsg.length; i++)  // 초기화
               likesCount[i] = 0;
@@ -195,7 +191,7 @@ export default function Board(params) {
                     style={{ whiteSpace: 'pre-wrap' }}
                     className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
                   >
-                  { unescapedMsg.split("").map((char, index) => {
+                  { unescapedMsg.split("").map((char: string, index: number) => {
                       let changeColor;
                       if(likesCount[index] > 8) changeColor = '#A6A6A6';
                       else if(likesCount[index] >= 7) changeColor = '#ADADAD';
@@ -208,7 +204,7 @@ export default function Board(params) {
                       else changeColor = '#FFF'
 
                       return (
-                        <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                        <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
                       )
                     })
                   }

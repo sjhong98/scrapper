@@ -21,8 +21,6 @@ export default function Signup() {
     const [pw, setPw] = useState("");
     const [pwCheck, setPwCheck] = useState("");
     const [msg, setMsg] = useState("");
-    const [result, setResult] = useState();
-    const [active, setActive] = useState(false);
     const router = useRouter();
 
     const firebaseConfig = {
@@ -37,7 +35,7 @@ export default function Signup() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const handleSignup = (e) => {
+    const handleSignup = (e:any) => {
         e.preventDefault();
         if(e.key === 'Enter') {
             console.log("엔터 입력");
@@ -47,7 +45,7 @@ export default function Signup() {
                 setMsg("비밀번호가 일치하지 않습니다");
             else {
                 let query = doc(db, 'accounts', id);
-                getDoc(query).then(res => {
+                getDoc(query).then((res:any) => {
                     console.log(res.data())
                     if(res.data() === undefined) {
                         const newDocRef = doc(db, 'accounts', id); 

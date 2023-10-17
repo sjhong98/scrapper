@@ -26,12 +26,12 @@ import {
 import './styles/main.css';
 
 export default function Home() {
-  const inputRef = useRef();
-  const lineRef = useRef();
-  const logoRef = useRef();
-  const inputContainerRef = useRef();
-  const loginRef = useRef();
-  const menuRef = useRef();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLParagraphElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
+  const loginRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const [logo, setLogo] = useState("");
@@ -40,18 +40,18 @@ export default function Home() {
   const [result, setResult] = useState();
   const [active, setActive] = useState(false);
   const [msg, setMsg] = useState("");
-  const [id, setId] = useState(sessionStorage.getItem('scrapper-login'));
+  const [id, setId] = useState<any>("");
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
-  const [selectedId, setselectedId] = useState(-1);;
+  const [selectedId, setselectedId] = useState<string>("");;
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
   const [menuScrapOver, setMenuScrapOver] = useState(false);
   const [menuLogoutOver, setMenuLogoutOver] = useState(false);
   const [showId, setShowId] = useState(false);
-  const previousTime = new Date('2023-10-15T12:00:00');
+  const previousTime:any = new Date('2023-10-15T12:00:00');
 
   const [postList, setPostList] = useState([]);
 
@@ -68,6 +68,8 @@ export default function Home() {
   const db = getFirestore(app);
 
   useEffect(() => {
+    let _id:any = sessionStorage.getItem('scrapper-login');
+    setId(_id && _id);
     let i = 0;
     let ch = "SSCRAPPER";
 
@@ -81,14 +83,18 @@ export default function Home() {
     }, 120);
 
     if(!sessionStorage.getItem('scrapper-login')) 
-      loginRef.current.classList.add('login-show-up');
+      if(loginRef.current !== undefined)
+        loginRef.current && loginRef.current.classList.add('login-show-up');
     else {
       getContentFromDb();
       setTimeout(() => {
-        inputContainerRef.current.classList.add('textarea-show-up');
-        inputRef.current.classList.add('textarea-show-up');
-        menuRef.current.classList.add('textarea-show-up');
-        inputRef.current.focus();
+        if(inputContainerRef.current !== undefined && inputRef.current !== undefined && menuRef !== undefined) {
+          inputContainerRef.current && inputContainerRef.current.classList.add('textarea-show-up');
+          inputRef.current && inputRef.current.classList.add('textarea-show-up');
+          menuRef.current && menuRef.current.classList.add('textarea-show-up');
+          inputRef.current && inputRef.current.focus();
+        }
+        
       }, 1000);
     }
 
@@ -99,40 +105,23 @@ export default function Home() {
 
   useEffect(() => {
     if(writing !== "") {
-      logoRef.current.classList.remove('not-available-to-upload');
-      logoRef.current.classList.add('available-to-upload');
-    }
-    else {
-      logoRef.current.classList.remove('available-to-upload');
-      logoRef.current.classList.add('not-available-to-upload');
-    }
-    setTextareaHeight((10 + writing.match(/\n/g) || []).length * 3.5);    // textarea height 조절
-  }, [writing])
-
-  useEffect(() => {     // 로그인
-    if(active) {
-      if(result === null)
-        setMsg("존재하지 않는 아이디");
-      else {
-        let dbPw = result.data.value.mapValue.fields.password.stringValue;
-        if(pw === dbPw) {
-          setMsg("");
-          sessionStorage.setItem('scrapper-login', id);
-          loginRef.current.classList.add('login-done');
-          inputContainerRef.current.classList.add('textarea-show-up');
-          menuRef.current.classList.add('textarea-show-up');
-          setTimeout(() => {
-            inputRef.current.classList.add('textarea-show-up');
-            inputRef.current.focus();
-          }, 100);
-          getContentFromDb();
-        }
-        else 
-          setMsg("비밀번호 미일치");
+      if(logoRef.current !== undefined && logoRef.current) {
+        logoRef.current.classList.remove('not-available-to-upload');
+        logoRef.current.classList.add('available-to-upload');
       }
     }
-    setActive(true);
-  }, [result]);
+    else {
+      if(logoRef.current !== undefined && logoRef.current) {
+        logoRef.current.classList.remove('available-to-upload');
+        logoRef.current.classList.add('not-available-to-upload');
+      }
+    }
+    if(writing.match(/\n/g) !== null) {
+      const matchResult = writing.match(/\n/g);
+      const lineCount = matchResult ? matchResult.length : 0;
+      setTextareaHeight((10 + lineCount) * 3.5);
+    }
+  }, [writing])
 
   useEffect(() => {
     if(msgData){
@@ -141,13 +130,13 @@ export default function Home() {
     }
   }, [msgData]);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e:any) => {
     if(e.key === 'Enter') {   // 엔터가 눌렸을 때에만 반응
       if(!id || !pw)
         setMsg("모두 입력해주세요");
       else {
         getContentFromDb();
-        getDoc(doc(db, 'accounts', id)).then(res => {
+        getDoc(doc(db, 'accounts', id)).then((res:any) => {
           let dbPw = res.data().password;
           if(dbPw === null)
             setMsg("존재하지 않는 아이디");
@@ -155,12 +144,12 @@ export default function Home() {
             if(pw === dbPw) {
               setMsg("");
               sessionStorage.setItem('scrapper-login', id);
-              loginRef.current.classList.add('login-done');
-              inputContainerRef.current.classList.add('textarea-show-up');
-              menuRef.current.classList.add('textarea-show-up');
+              loginRef.current && loginRef.current.classList.add('login-done');
+              inputContainerRef.current && inputContainerRef.current.classList.add('textarea-show-up');
+              menuRef.current && menuRef.current.classList.add('textarea-show-up');
               setTimeout(() => {
-                inputRef.current.classList.add('textarea-show-up');
-                inputRef.current.focus();
+                inputRef.current && inputRef.current.classList.add('textarea-show-up');
+                inputRef.current && inputRef.current.focus();
               }, 100);
               getContentFromDb();
             }
@@ -173,19 +162,19 @@ export default function Home() {
   };
 
   const handleLogoOver = () => {
-    logoRef.current.classList.add('font-black');
+    logoRef.current && logoRef.current.classList.add('font-black');
   }
 
   const handleLogoOut = () => {
-    logoRef.current.classList.remove('font-black');
+    logoRef.current && logoRef.current.classList.remove('font-black');
   }
 
   const handleLogoClick = () => {
     uploadMsg(writing);
   }
   
-  const uploadMsg = (word) => {
-    let currentTime = new Date();
+  const uploadMsg = (word: string) => {
+    let currentTime:any = new Date();
     let uploadTime = currentTime - previousTime;
     addDoc(collection(db, 'posts'), {
       msg: word,
@@ -199,11 +188,12 @@ export default function Home() {
   }
 
   const getContentFromDb = async () => {   
+    let id = sessionStorage.getItem('scrapper-login');
     let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
     await getDocs(q)
-    .then(res => {
-      let temp = [];
-      res.forEach(doc => {
+    .then((res:any) => {
+      let temp:any = [];
+      res.forEach((doc:any) => {
         let docTemp = doc.data();
         if(docTemp.user === id) {
           docTemp.postId = doc.id;
@@ -214,7 +204,7 @@ export default function Home() {
     })
   }
 
-  const uploadLikes= (postId, newLikes) => {
+  const uploadLikes= (postId: string, newLikes: string) => {
 
     const documentRef = doc(db, 'posts', postId);
     updateDoc(documentRef, {
@@ -223,14 +213,14 @@ export default function Home() {
     getContentFromDb();
   }
 
-  const handleTextSelection = (postId) => {
+  const handleTextSelection = () => {
     let startIndex;
     let endIndex;
-    const findObj = postList.find(item => item.postId === selectedId);
+    const findObj = postList.find((item: any) => (item as any).postId === selectedId) as any;
 
     const selection = window.getSelection();
 
-    if (selection.rangeCount > 0) {
+    if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
       startIndex = findObj.msg.indexOf(selectedText);
@@ -242,28 +232,36 @@ export default function Home() {
       testLineBreaks += findObj.msg[i];
     }
     let linebreaks = 0;
-    if(testLineBreaks.match(/\\n/g) !== null)
-      linebreaks = testLineBreaks.match(/\\n/g).length;
+    if(testLineBreaks.match(/\\n/g) !== null) {
+      const _testLineBreaks = testLineBreaks.match(/\\n/g);
+      const _lineBreaks = _testLineBreaks ? _testLineBreaks.length : 0
+      linebreaks = _lineBreaks
+    }
+      
 
     if(linebreaks > 0) {
       startIndex -= linebreaks;
+      if(endIndex)
       endIndex -= linebreaks;
     } 
 
-    let length = endIndex - startIndex;
+    let length;
+    if(endIndex !== undefined)
+    length = endIndex - startIndex;
     let count = startIndex;
 
-    for(let i=0; i<length+1; i++) {
-      findObj.likes = findObj.likes + count.toString() + " ";
-      count++;
-    }
+    if(length!==undefined)
+      for(let i=0; i<length+1; i++) {
+        findObj.likes = findObj.likes + count.toString() + " ";
+        count++;
+      }
 
     uploadLikes(selectedId, findObj.likes);
   };
 
   const handleDelete = () => {
     deleteDoc(doc(db, 'posts', selectedId))
-    .then(res => {
+    .then((res:any) => {
       alert("삭제되었습니다.");
     })
     getContentFromDb();
@@ -271,7 +269,7 @@ export default function Home() {
 
   const handleScrap = () => {   // 나중에 아이콘 채워지도록 만들기
     getDoc(doc(db, 'accounts', id))
-    .then(res => {
+    .then((res:any) => {
       let _scrap = res.data().scrap;
       for(let i=0; i<_scrap.length; i++) {
         if(_scrap[i] === selectedId) {
@@ -283,7 +281,7 @@ export default function Home() {
       updateDoc(doc(db, 'accounts', id), {
         scrap: _scrap
       })
-      .then(res => {
+      .then((res:any) => {
         alert("스크랩되었습니다.");
       })
     })
@@ -327,11 +325,11 @@ export default function Home() {
           className="w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none overflow-hidden resize-none" 
         />
         <div className="w-5/6 h-screen flex flex-col items-center">
-        { postList.map((item, index) => {
+        { postList.map((item: any, index: any) => {
             const unescapedMsg = item.msg.replace(/\\n/g, "\n");
             
             // 좋아요 정보 시각화 로직
-            let likesCount = [];
+            let likesCount:any = [];
             let likes = item.likes.split(" ");
             for(let i=0; i<unescapedMsg.length; i++)  // 초기화
               likesCount[i] = 0;
@@ -339,14 +337,14 @@ export default function Home() {
               likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
-                <div className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
+                <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
                   <p 
                     key={index} 
                     ref={lineRef}
                     style={{ whiteSpace: 'pre-wrap' }}
                     className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
                   >
-                  { unescapedMsg.split("").map((char, index) => {
+                  { unescapedMsg.split("").map((char: string, index: number) => {
                       let changeColor;
                       if(likesCount[index] > 8) changeColor = '#A6A6A6';
                       else if(likesCount[index] >= 7) changeColor = '#ADADAD';
@@ -359,7 +357,7 @@ export default function Home() {
                       else changeColor = '#FFF'
 
                       return (
-                        <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                        <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
                       )
                     })
                   }

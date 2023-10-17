@@ -32,7 +32,7 @@ export default function Scrap() {
     const [menuHomeOver, setMenuHomeOver] = useState(false);
     const [menuMyOver, setMenuMyOver] = useState(false);
     const [selectedId, setSelectedId] = useState("");
-    const [id, setId] = useState(sessionStorage.getItem('scrapper-login'));
+    const [id, setId] = useState<any>("");
     const [menuScrapOver, setMenuScrapOver] = useState(false);
 
     const firebaseConfig = {
@@ -45,23 +45,25 @@ export default function Scrap() {
         appId: "1:241265284136:web:253ec9f008e31a3d03911d"
     };
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db:any = getFirestore(app);
     
     useEffect(() => {
+        setId(sessionStorage.getItem('scrapper-login'))
         getContentFromDb();
     }, []);
 
     const getContentFromDb = async () => {
-        let scrap = [];   
+        let id:any = sessionStorage.getItem('scrapper-login');
+        let scrap:any = [];   
         await getDoc(doc(db, 'accounts', id))
-        .then(res => {
+        .then((res:any) => {
             scrap = res.data().scrap;
         })
         let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
         await getDocs(q)
-        .then(res => {
-          let temp = [];
-          res.forEach(doc => {
+        .then((res:any) => {
+          let temp:any = [];
+          res.forEach((doc:any) => {
             let docTemp = doc.data();
             for(let i=0; i<scrap.length; i++) {
                 if(doc.id === scrap[i]) {
@@ -75,7 +77,7 @@ export default function Scrap() {
         })
       }
 
-    const uploadLikes= (postId, newLikes) => {
+    const uploadLikes= (postId:string, newLikes:string) => {
         const documentRef = doc(db, 'posts', postId);
         updateDoc(documentRef, {
             likes: newLikes
@@ -86,43 +88,47 @@ export default function Scrap() {
     const handleTextSelection = () => {
         let startIndex;
         let endIndex;
-        const findObj = postList.find(item => item.postId === selectedId);
-        console.log(selectedId);
-
+        console.log(postList);
+        const findObj = postList.find((item: any) => (item as any).postId === selectedId) as any;
+    
         const selection = window.getSelection();
-
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            const selectedText = range.toString();
-            startIndex = findObj.msg.indexOf(selectedText);
-            endIndex = startIndex + selectedText.length - 1;
+    
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const selectedText = range.toString();
+          startIndex = findObj.msg.indexOf(selectedText);
+          endIndex = startIndex + selectedText.length - 1;
         }
-
-        console.log(startIndex, endIndex);
-
+    
         let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
         for(let i=0; i<startIndex; i++) {
-            testLineBreaks += findObj.msg[i];
+          testLineBreaks += findObj.msg[i];
         }
         let linebreaks = 0;
-        if(testLineBreaks.match(/\\n/g) !== null)
-            linebreaks = testLineBreaks.match(/\\n/g).length;
-
+        const matches = testLineBreaks.match(/\\n/g);
+        if (matches !== null) {
+          linebreaks = matches.length;
+        }
+    
         if(linebreaks > 0) {
-            startIndex -= linebreaks;
+          startIndex -= linebreaks;
+          if(endIndex !== undefined)
             endIndex -= linebreaks;
         } 
-
-        let length = endIndex - startIndex;
+    
+        let length
+        if(endIndex !== undefined)
+          length = endIndex - startIndex;
         let count = startIndex;
-
-        for(let i=0; i<length+1; i++) {
+    
+        if(length !== undefined)
+          for(let i=0; i<length+1; i++) {
             findObj.likes = findObj.likes + count.toString() + " ";
             count++;
-        }
-
+          }
+    
         uploadLikes(selectedId, findObj.likes);
-    };
+      };
     
 
     return (
@@ -144,11 +150,11 @@ export default function Scrap() {
             <div className="w-5/6 h-screen">
                 <div className="h-1/5" />
                 <div className="h-auto flex flex-col justify-center items-center">
-                { postList.map((item, index) => {
+                { postList.map((item:any, index:number) => {
                     const unescapedMsg = item.msg.replace(/\\n/g, "\n");
                     
                     // 좋아요 정보 시각화 로직
-                    let likesCount = [];
+                    let likesCount:any = [];
                     let likes = item.likes.split(" ");
                     for(let i=0; i<unescapedMsg.length; i++)  // 초기화
                     likesCount[i] = 0;
@@ -156,7 +162,7 @@ export default function Scrap() {
                         likesCount[likes[i]] = likesCount[likes[i]] + 1;
 
                     return (
-                        <div>
+                        <div key={index}>
                         <p className="text-black text-center mt-12">{item.user}</p>
                         <p 
                         key={index} 
@@ -166,7 +172,7 @@ export default function Scrap() {
                         style={{ whiteSpace: 'pre-wrap' }}
                         className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
                         >
-                        { unescapedMsg.split("").map((char, index) => {
+                        { unescapedMsg.split("").map((char:string, index:number) => {
                             let changeColor;
                             if(likesCount[index] > 8) changeColor = '#A6A6A6';
                             else if(likesCount[index] >= 7) changeColor = '#ADADAD';
@@ -179,7 +185,7 @@ export default function Scrap() {
                             else changeColor = '#FFF'
 
                             return (
-                            <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                            <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
                             )
                         })
                         }
