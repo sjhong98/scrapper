@@ -13,10 +13,11 @@ import {
   // setDoc,   // Id 지정 가능
   updateDoc,   // update document
   arrayUnion,   // push elem to array
-  // getDocs,  // 전체 읽어오기
+  getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
   deleteDoc, // 삭제
-  doc       // 특정 데이터 읽기
+  doc,       // 특정 데이터 읽기
+  collection
  } from "firebase/firestore";
 
 import '../../styles/main.css';
@@ -36,11 +37,10 @@ export default function Board(params) {
   const [content, setContent] = useState([]);
   const [contentRev, setContentRev] = useState([]);
   const [lineIndex, setLineIndex] = useState(-1);
-  const [result, setResult] = useState();
-  const [active, setActive] = useState(false);
+  const [postList, setPostList] = useState([]);
   const [msg, setMsg] = useState("");
-  const [id, setId] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(-1);;
+  const [id, setId] = useState(params.params.id);
+  const [selectedId, setselectedId] = useState(-1);;
   const [likesData, setLikesData] = useState([]);
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
@@ -73,7 +73,6 @@ export default function Board(params) {
 
     inputContainerRef.current.classList.add('textarea-show-up');
     menuRef.current.classList.add('textarea-show-up');
-    setId(params.params.id);
     getContentFromDb();
 
     return () => {
@@ -90,47 +89,48 @@ export default function Board(params) {
 
 
   const getContentFromDb = async () => {   
-    await getDoc(doc(db, 'content', params.params.id))
+    console.log("done");
+    await getDocs(collection(db, 'posts'))
     .then(res => {
-      let data = res._document.data.value.mapValue.fields.contents.arrayValue.values;
-      setContent(res._document.data.value.mapValue.fields.contents.arrayValue.values);
-      let likesTemp = [];
-      let msgTemp = [];
-      for(let i=0; i<data.length; i++){
-        let splitData = data[i].stringValue.split("+");
-        msgTemp.push(splitData[0]);
-        likesTemp.push(splitData[1]);
-      }
-      setMsgData(msgTemp);
-      setLikesData(likesTemp);
-    });
+      let temp = [];
+      res.forEach(doc => {
+        let docTemp = doc.data();
+        if(docTemp.user === id) {
+          docTemp.postId = doc.id;
+          temp.push(docTemp);
+        }
+      });    
+      setPostList(temp.reverse());
+    })
   }
 
-  const uploadHighlight = (res) => {
-    const documentRef = doc(db, 'content', id);
+  const uploadLikes= (postId, newLikes) => {
+    console.log(postId, newLikes)
+
+    const documentRef = doc(db, 'posts', postId);
     updateDoc(documentRef, {
-      contents: res
+      likes: newLikes
     });
     getContentFromDb();
   }
 
-  const handleTextSelection = (index) => {
+  const handleTextSelection = (postId) => {
     let startIndex;
     let endIndex;
-    let likesRev = [...likesData].reverse();
-    let msgRev = [...msgData].reverse();
+    const findObj = postList.find(item => item.postId === selectedId);
+
     const selection = window.getSelection();
 
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
-      startIndex = msgRev[selectedIndex].indexOf(selectedText);
+      startIndex = findObj.msg.indexOf(selectedText);
       endIndex = startIndex + selectedText.length - 1;
     }
 
-    let testLineBreaks = "";
+    let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
     for(let i=0; i<startIndex; i++) {
-      testLineBreaks += msgRev[selectedIndex][i];
+      testLineBreaks += findObj.msg[i];
     }
     let linebreaks = 0;
     if(testLineBreaks.match(/\\n/g) !== null)
@@ -145,16 +145,11 @@ export default function Board(params) {
     let count = startIndex;
 
     for(let i=0; i<length+1; i++) {
-      likesRev[selectedIndex] = likesRev[selectedIndex] + count.toString() + " ";
+      findObj.likes = findObj.likes + count.toString() + " ";
       count++;
     }
-    
-    let test = [];
-    for(let i=0; i<content.length; i++) {
-      test.push(msgRev[i] + '+' + likesRev[i]);
-    }
-    let testRev = [...test].reverse();
-    uploadHighlight(testRev);
+
+    uploadLikes(selectedId, findObj.likes);
   };
 
   return (
@@ -174,52 +169,45 @@ export default function Board(params) {
 
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
         <div className="w-5/6 mt-32 h-screen flex flex-col items-center">
-        {contentRev && contentRev.map((item, index) => {
-            const unescapedMsg = item.replace(/\\n/g, "\n");
-            let likesRev = [...likesData].reverse();
-            let likes = likesRev[index].split(" ");
+        { postList.map((item, index) => {
+            const unescapedMsg = item.msg.replace(/\\n/g, "\n");
+            
+            // 좋아요 정보 시각화 로직
             let likesCount = [];
-            for(let i=0; i<unescapedMsg.length; i++) 
+            let likes = item.likes.split(" ");
+            for(let i=0; i<unescapedMsg.length; i++)  // 초기화
               likesCount[i] = 0;
-            for(let i=0; i<likes.length; i++) {
+            for(let i=0; i<likes.length; i++) { // 드래그된 부분의 숫자 증가
               likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
-                <p 
-                  key={index} 
-                  ref={lineRef}
-                  onMouseOver={() => {setLineIndex(index); setSelectedIndex(index)}} 
-                  onMouseLeave={() => setLineIndex(-1)}
-                  style={{ whiteSpace: 'pre-wrap' }}
-                  className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
-                >
-                { unescapedMsg.split("").map((char, index) => {
-                    let changeColor;
-                    if(likesCount[index] > 8)
-                      changeColor = '#A6A6A6';
-                    else if(likesCount[index] >= 7)
-                      changeColor = '#ADADAD';
-                    else if(likesCount[index] >= 6)
-                      changeColor = '#B5B5B5';
-                    else if(likesCount[index] >= 5)
-                      changeColor = '#BFBFBF';
-                    else if(likesCount[index] >= 4)
-                      changeColor = '#CCCCCC';
-                    else if(likesCount[index] >= 3)
-                      changeColor = '#D9D9D9';
-                    else if(likesCount[index] >= 2)
-                      changeColor = '#E6E6E6';
-                    else if(likesCount[index] >= 1)
-                      changeColor = '#F2F2F2';
-                    else 
-                      changeColor = '#FFF'
+                
+                  <p 
+                    key={index} 
+                    ref={lineRef}
+                    onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} 
+                    onMouseLeave={() => setLineIndex(-1)}
+                    style={{ whiteSpace: 'pre-wrap' }}
+                    className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
+                  >
+                  { unescapedMsg.split("").map((char, index) => {
+                      let changeColor;
+                      if(likesCount[index] > 8) changeColor = '#A6A6A6';
+                      else if(likesCount[index] >= 7) changeColor = '#ADADAD';
+                      else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
+                      else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
+                      else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
+                      else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
+                      else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
+                      else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
+                      else changeColor = '#FFF'
 
-                    return (
-                      <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
-                    )
-                  })
-                }
-                </p>
+                      return (
+                        <span key={index} onMouseUp={(index) => handleTextSelection(index)} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                      )
+                    })
+                  }
+                  </p>
               );
           })}
         </div>

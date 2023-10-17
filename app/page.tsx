@@ -10,7 +10,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { 
   getFirestore, 
-  // addDoc,   // 임의의 Id 지정
+  addDoc,   // 임의의 Id 지정
   // setDoc,   // Id 지정 가능
   updateDoc,   // update document
   arrayUnion,   // push elem to array
@@ -39,11 +39,11 @@ export default function Home() {
   const [result, setResult] = useState();
   const [active, setActive] = useState(false);
   const [msg, setMsg] = useState("");
-  const [id, setId] = useState("");
+  const [id, setId] = useState(sessionStorage.getItem('scrapper-login'));
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
-  const [selectedIndex, setSelectedIndex] = useState(-1);;
+  const [selectedId, setselectedId] = useState(-1);;
   const [likesData, setLikesData] = useState([]);
   const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
@@ -80,7 +80,6 @@ export default function Home() {
     if(!sessionStorage.getItem('scrapper-login')) 
       loginRef.current.classList.add('login-show-up');
     else {
-      setId(sessionStorage.getItem('scrapper-login'));
       getContentFromDb();
       setTimeout(() => {
         inputContainerRef.current.classList.add('textarea-show-up');
@@ -145,7 +144,27 @@ export default function Home() {
         setMsg("모두 입력해주세요");
       else {
         getContentFromDb();
-        getDoc(doc(db, 'content', id)).then(res => setResult(res._document));
+        getDoc(doc(db, 'accounts', id)).then(res => {
+          let dbPw = res.data().password;
+          if(dbPw === null)
+            setMsg("존재하지 않는 아이디");
+          else {
+            if(pw === dbPw) {
+              setMsg("");
+              sessionStorage.setItem('scrapper-login', id);
+              loginRef.current.classList.add('login-done');
+              inputContainerRef.current.classList.add('textarea-show-up');
+              menuRef.current.classList.add('textarea-show-up');
+              setTimeout(() => {
+                inputRef.current.classList.add('textarea-show-up');
+                inputRef.current.focus();
+              }, 100);
+              getContentFromDb();
+            }
+            else 
+              setMsg("비밀번호 미일치");
+      }
+        });
       }
     }
   };
@@ -159,22 +178,16 @@ export default function Home() {
   }
 
   const handleLogoClick = () => {
-    uploadWordToDb(writing);
+    uploadMsg(writing);
   }
   
-  const uploadWordToDb = (word) => {
-    let newData = word.replace(/\n/g, "\\n") + "+" + " ";
-    let newDataWithId = word.replace(/\n/g, "\\n") + "+" + " " + "+" + id;
-    
-    const documentRef =  doc(db, "content", id);
-    const documentRef2 = doc(db, "main", "data");
-    updateDoc(documentRef, {
-      contents: arrayUnion(newData),
+  const uploadMsg = (word) => {
+    addDoc(collection(db, 'posts'), {
+      msg: word,
+      likes: "",
+      user: id
     })
 
-    updateDoc(documentRef2, {
-      contents: arrayUnion(newDataWithId),
-    })
     getContentFromDb();
     setWriting("");
   }
@@ -185,18 +198,21 @@ export default function Home() {
       let temp = [];
       res.forEach(doc => {
         let docTemp = doc.data();
-        docTemp.postId = doc.id;
-        temp.push(docTemp);
+        console.log(docTemp, id)
+        if(docTemp.user === id) {
+          docTemp.postId = doc.id;
+          temp.push(docTemp);
+        }
       });    
       setPostList(temp.reverse());
     })
   }
 
-  const uploadHighlight = (postId, newLikes) => {
+  const uploadLikes= (postId, newLikes) => {
 
     const documentRef = doc(db, 'posts', postId);
     updateDoc(documentRef, {
-      posts: newLikes
+      likes: newLikes
     });
     getContentFromDb();
   }
@@ -204,7 +220,7 @@ export default function Home() {
   const handleTextSelection = (postId) => {
     let startIndex;
     let endIndex;
-    const findObj = postList.find(item => item.postId === selectedIndex);
+    const findObj = postList.find(item => item.postId === selectedId);
 
     const selection = window.getSelection();
 
@@ -236,7 +252,7 @@ export default function Home() {
       count++;
     }
 
-    uploadHighlight(postId, findObj.likes);
+    uploadLikes(selectedId, findObj.likes);
   };
 
   return (
@@ -281,16 +297,17 @@ export default function Home() {
             
             // 좋아요 정보 시각화 로직
             let likesCount = [];
+            let likes = item.likes.split(" ");
             for(let i=0; i<unescapedMsg.length; i++)  // 초기화
               likesCount[i] = 0;
-            for(let i=0; i<item.likes.length; i++) { // 드래그된 부분의 숫자 증가
-              likesCount[item.likes[i]] = likesCount[item.likes[i]] + 1;
+            for(let i=0; i<likes.length; i++) { // 드래그된 부분의 숫자 증가
+              likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
                 <p 
                   key={index} 
                   ref={lineRef}
-                  onMouseOver={() => {setLineIndex(index); setSelectedIndex(item.postId)}} 
+                  onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} 
                   onMouseLeave={() => setLineIndex(-1)}
                   style={{ whiteSpace: 'pre-wrap' }}
                   className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
