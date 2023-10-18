@@ -3,12 +3,13 @@
 // 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
-import './modules/menuBar';
+import MenuBar from "../../modules/menuBar";
+import StarIcon from '@mui/icons-material/Star';
 import { 
   getFirestore, 
   query,
+  getDoc,
   orderBy,
   updateDoc,   // update document
   getDocs,  // 전체 읽어오기
@@ -21,19 +22,13 @@ import '../../styles/main.css';
 export default function Board(params: any) {
   const lineRef = useRef<HTMLDivElement | null>(null);
   const inputContainerRef = useRef<HTMLDivElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const homeRef = useRef<SVGSVGElement | null>(null);
-  const myRef = useRef<SVGSVGElement | null>(null);
-  const router = useRouter();
+  const menuRef = useRef<any>(null);
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
   const [postList, setPostList] = useState<Document[]>([]);
   const id:any = params.params.id;
   const [selectedId, setselectedId] = useState<string>("");;
-  const [menuHomeOver, setMenuHomeOver] = useState(false);
-  const [menuMyOver, setMenuMyOver] = useState(false);
-  const [menuScrapOver, setMenuScrapOver] = useState(false);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -141,6 +136,27 @@ export default function Board(params: any) {
     uploadLikes(selectedId, findObj.likes);
   };
 
+  const handleScrap = () => {   // 나중에 아이콘 채워지도록 만들기
+    let id = sessionStorage.getItem('scrapper');
+    getDoc(doc(db, 'accounts', id))
+    .then((res:any) => {
+      let _scrap = res.data().scrap;
+      for(let i=0; i<_scrap.length; i++) {
+        if(_scrap[i] === selectedId) {
+          alert("이미 스크랩된 게시물입니다.");
+          return;
+        }
+      }
+      _scrap.push(selectedId);
+      updateDoc(doc(db, 'accounts', id), {
+        scrap: _scrap
+      })
+      .then((res:any) => {
+        alert("스크랩되었습니다.");
+      })
+    })
+  }
+
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
       <div className="h-1/6 w-1/2 flex justify-center items-center fixed top-0 z-40">
@@ -149,6 +165,10 @@ export default function Board(params: any) {
           style={{fontFamily:'lemon-r'}}>
             {logo}
         </p>
+      </div>
+
+      <div className="fixed opacity-0" style={{zIndex:9999}} ref={menuRef}>
+        <MenuBar />
       </div>
 
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
@@ -165,7 +185,7 @@ export default function Board(params: any) {
               likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
-                
+                <div>
                   <p 
                     key={index} 
                     ref={lineRef}
@@ -192,6 +212,10 @@ export default function Board(params: any) {
                     })
                   }
                   </p>
+                  <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                    <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
+                  </div>
+                </div>
               );
           })}
         </div>

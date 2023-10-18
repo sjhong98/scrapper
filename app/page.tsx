@@ -5,8 +5,9 @@
 import { useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
 import DeleteIcon from '@mui/icons-material/Delete';
+import StarIcon from '@mui/icons-material/Star';
 import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc } from "firebase/firestore";
-import './modules/menuBar';
+import MenuBar from "./modules/menuBar";
 import './styles/main.css';
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
   const logoRef = useRef<HTMLParagraphElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<any>(null);
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
@@ -96,7 +98,7 @@ export default function Home() {
     if(writing.match(/\n/g) !== null) {
       const matchResult = writing.match(/\n/g);
       const lineCount = matchResult ? matchResult.length : 0;
-      setTextareaHeight((10 + lineCount) * 3.5);
+      setTextareaHeight((lineCount) * 3 + 10);
     }
   }, [writing])
 
@@ -271,13 +273,15 @@ export default function Home() {
         </p>
       </div>
 
-      
-
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
         <input placeholder="ID" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
         <input placeholder="PW" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
         <p className="text-xl mt-12">{msg}</p>
         <a className="text-xl mt-12" href='/signup' >or  SIGN UP</a>
+      </div>
+
+      <div className="fixed opacity-0" style={{zIndex:9999}} ref={menuRef}>
+        <MenuBar />
       </div>
 
 

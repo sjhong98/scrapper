@@ -2,24 +2,12 @@
 
 // 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
-import './modules/menuBar';
-import { 
-  getFirestore, 
-  collection,
-  orderBy,
-  // addDoc,   // 임의의 Id 지정
-  // setDoc,   // Id 지정 가능
-  updateDoc,   // update document
-  arrayUnion,   // push elem to array
-  getDocs,  // 전체 읽어오기
-  getDoc,   // 문서 하나 읽어오기
-  deleteDoc, // 삭제
-  doc,       // 특정 데이터 읽기
-  query,
- } from "firebase/firestore";
+import MenuBar from "../modules/menuBar";
+import StarIcon from '@mui/icons-material/Star';
+import { getFirestore, collection, orderBy, updateDoc, getDocs, getDoc, doc, query, deleteDoc } from "firebase/firestore";
 
 import '../styles/main.css';
 
@@ -27,11 +15,8 @@ export default function Scrap() {
     const router = useRouter();
     const [postList, setPostList] = useState([]);
     const [lineIndex, setLineIndex] = useState(-1);
-    const [menuHomeOver, setMenuHomeOver] = useState(false);
-    const [menuMyOver, setMenuMyOver] = useState(false);
     const [selectedId, setSelectedId] = useState("");
     const [id, setId] = useState<any>("");
-    const [menuScrapOver, setMenuScrapOver] = useState(false);
 
     const firebaseConfig = {
         apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -128,6 +113,20 @@ export default function Scrap() {
     
         uploadLikes(selectedId, findObj.likes);
       };
+  
+    const handleUnscrap = () => {   // 나중에 아이콘 채워지도록 만들기
+      getDoc(doc(db, 'accounts', id))
+      .then((res:any) => {
+        let _scrap = res.data().scrap;
+        let result = _scrap.find((item:any) => {item !== selectedId});
+        updateDoc(doc(db, 'accounts', id), {
+          scrap: result
+        })
+        .then((res:any) => {
+          alert("스크랩이 취소되었습니다.");
+        })
+      })
+    }
     
 
     return (
@@ -138,6 +137,10 @@ export default function Scrap() {
                     style={{fontFamily:'lemon-r'}}>
                     SCRAPPER
                 </p>
+            </div>
+
+            <div className="fixed" style={{zIndex:9999}}>
+              <MenuBar />
             </div>
 
             <div className="w-5/6 h-screen">
@@ -183,6 +186,9 @@ export default function Scrap() {
                         })
                         }
                         </p>
+                        <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                          <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleUnscrap} />
+                        </div>
                         </div>
                     );
                 })}

@@ -5,18 +5,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
-import './modules/menuBar';
+import MenuBar from "../modules/menuBar";
+import StarIcon from '@mui/icons-material/Star';
 import { 
   getFirestore, 
   collection,
   orderBy,
-  // addDoc,   // 임의의 Id 지정
-  // setDoc,   // Id 지정 가능
   updateDoc,   // update document
-  arrayUnion,   // push elem to array
   getDocs,  // 전체 읽어오기
   getDoc,   // 문서 하나 읽어오기
-  deleteDoc, // 삭제
   doc,       // 특정 데이터 읽기
   query,
  } from "firebase/firestore";
@@ -27,10 +24,7 @@ export default function Posts() {
     const router = useRouter();
     const [postList, setPostList] = useState([]);
     const [lineIndex, setLineIndex] = useState(-1);
-    const [menuHomeOver, setMenuHomeOver] = useState(false);
-    const [menuMyOver, setMenuMyOver] = useState(false);
     const [selectedId, setSelectedId] = useState<string>("");
-    const [menuScrapOver, setMenuScrapOver] = useState(false);
 
     const firebaseConfig = {
         apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -116,6 +110,27 @@ export default function Posts() {
     
         uploadLikes(selectedId, findObj.likes);
       };
+  
+    const handleScrap = () => {   // 나중에 아이콘 채워지도록 만들기
+      let id = sessionStorage.getItem('scrapper');
+      getDoc(doc(db, 'accounts', id))
+      .then((res:any) => {
+        let _scrap = res.data().scrap;
+        for(let i=0; i<_scrap.length; i++) {
+          if(_scrap[i] === selectedId) {
+            alert("이미 스크랩된 게시물입니다.");
+            return;
+          }
+        }
+        _scrap.push(selectedId);
+        updateDoc(doc(db, 'accounts', id), {
+          scrap: _scrap
+        })
+        .then((res:any) => {
+          alert("스크랩되었습니다.");
+        })
+      })
+    }
     
 
     return (
@@ -126,6 +141,10 @@ export default function Posts() {
                     style={{fontFamily:'lemon-r'}}>
                     SCRAPPER
                 </p>
+            </div>
+
+            <div className="fixed" style={{zIndex:9999}}>
+              <MenuBar />
             </div>
 
             <div className="w-5/6 h-screen">
@@ -171,6 +190,9 @@ export default function Posts() {
                         })
                         }
                         </p>
+                        <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                          <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
+                        </div>
                         </div>
                     );
                 })}
