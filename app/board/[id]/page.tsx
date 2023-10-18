@@ -160,8 +160,7 @@ export default function Board(params: any) {
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
       <div className="h-1/6 w-1/2 flex justify-center items-center fixed top-0 z-40">
-        <p 
-          className="tracking-[-5px] text-black text-8xl border-r-4 border-black pr-[15px] cursor-pointer" 
+        <p className="tracking-[-5px] text-black sm:text-8xl text-6xl border-r-4 border-black pr-[15px] cursor-pointer" 
           style={{fontFamily:'lemon-r'}}>
             {logo}
         </p>

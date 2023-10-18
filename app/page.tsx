@@ -103,7 +103,6 @@ export default function Home() {
   }, [writing])
 
   const handleLogin = async (e:any) => {
-    if(e.key === 'Enter') {   // 엔터가 눌렸을 때에만 반응
       if(!id || !pw)
         setMsg("모두 입력해주세요");
       else {
@@ -130,7 +129,6 @@ export default function Home() {
       }
         });
       }
-    }
   };
 
   const handleLogoOver = () => {
@@ -279,8 +277,9 @@ export default function Home() {
 
       {/* login */}
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
-        <input placeholder="ID" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
-        <input placeholder="PW" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
+        <input placeholder="ID" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black sm:mt-24 mt-32" />
+        <input placeholder="PW" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='password' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
+        <button onClick={(e) => {handleLogin(e)}} className="sm:w-1/5 w-3/5 rounded-md bg-black text-white text-3xl mt-10">LOGIN</button>
         <p className="text-xl mt-12">{msg}</p>
         <a className="text-xl mt-12" href='/signup' >or  SIGN UP</a>
       </div>
