@@ -36,31 +36,28 @@ export default function Signup() {
     const db = getFirestore(app);
 
     const handleSignup = (e:any) => {
-        e.preventDefault();
-        if(e.key === 'Enter') {
-            console.log("엔터 입력");
-            if(!id || !pw || !pwCheck) 
-                setMsg("모두 입력해주세요")
-            else if(pw !== pwCheck) 
-                setMsg("비밀번호가 일치하지 않습니다");
-            else {
-                let query = doc(db, 'accounts', id);
-                getDoc(query).then((res:any) => {
-                    console.log(res.data())
-                    if(res.data() === undefined) {
-                        const newDocRef = doc(db, 'accounts', id); 
-                        setDoc(newDocRef, {
-                            password: pw,
-                            scrap: []
-                        })
-                        .then(() => router.push('/'));
-                        sessionStorage.setItem('scrapper-login', id);
-                        setMsg("");
-                    }
-                    else 
-                        setMsg("중복된 아이디");
-                });
-            }
+        e.preventDefault(); 
+        if(!id || !pw || !pwCheck) 
+            setMsg("모두 입력해주세요")
+        else if(pw !== pwCheck) 
+            setMsg("비밀번호가 일치하지 않습니다");
+        else {
+            let query = doc(db, 'accounts', id);
+            getDoc(query).then((res:any) => {
+                console.log(res.data())
+                if(res.data() === undefined) {
+                    const newDocRef = doc(db, 'accounts', id); 
+                    setDoc(newDocRef, {
+                        password: pw,
+                        scrap: []
+                    })
+                    .then(() => router.push('/'));
+                    sessionStorage.setItem('scrapper-login', id);
+                    setMsg("");
+                }
+                else 
+                    setMsg("중복된 아이디");
+            });
         }
     }
     
@@ -76,6 +73,7 @@ export default function Signup() {
                 <input value={id} onChange={(e) => setId(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="ID" type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
                 <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PASSWORD" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
                 <input value={pwCheck} onChange={(e) => setPwCheck(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PW CHECK" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
+                <button onClick={(e) => {handleSignup(e)}} className="sm:w-1/5 w-3/5 rounded-md bg-black text-white text-3xl mt-10">SIGN UP</button>
                 <p className="text-xl mt-12">{msg}</p>
             </div>
         </div>
