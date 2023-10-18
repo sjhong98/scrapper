@@ -158,37 +158,35 @@ export default function Scrap() {
                         likesCount[likes[i]] = likesCount[likes[i]] + 1;
 
                     return (
-                        <div key={index}>
-                        <p key={index} className="text-black text-center mt-12">{item.user}</p>
-                        <p 
-                        key={index} 
-                        onMouseOver={() => {setLineIndex(index); setSelectedId(item.postId)}} 
-                        onMouseLeave={() => setLineIndex(-1)}
-                        onClick={() => router.push(`/board/${item.user}`)}
-                        style={{ whiteSpace: 'pre-wrap' }}
-                        className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
-                        >
-                        { unescapedMsg.split("").map((char:string, index:number) => {
-                            let changeColor;
-                            if(likesCount[index] > 8) changeColor = '#A6A6A6';
-                            else if(likesCount[index] >= 7) changeColor = '#ADADAD';
-                            else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
-                            else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
-                            else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
-                            else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
-                            else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
-                            else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
-                            else changeColor = '#FFF'
+                        <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setSelectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
+                          <p key={index} className="text-black text-center mt-12">{item.user}</p>
+                          <p 
+                          key={index} 
+                          onClick={() => router.push(`/board/${item.user}`)}
+                          style={{ whiteSpace: 'pre-wrap' }}
+                          className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
+                          >
+                          { unescapedMsg.split("").map((char:string, index:number) => {
+                              let changeColor;
+                              if(likesCount[index] > 8) changeColor = '#A6A6A6';
+                              else if(likesCount[index] >= 7) changeColor = '#ADADAD';
+                              else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
+                              else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
+                              else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
+                              else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
+                              else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
+                              else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
+                              else changeColor = '#FFF'
 
-                            return (
-                            <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
-                            )
-                        })
-                        }
-                        </p>
-                        <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
-                          <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleUnscrap} />
-                        </div>
+                              return (
+                              <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                              )
+                          })
+                          }
+                          </p>
+                          <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                            <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleUnscrap} />
+                          </div>
                         </div>
                     );
                 })}

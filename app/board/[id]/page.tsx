@@ -185,12 +185,10 @@ export default function Board(params: any) {
               likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
-                <div key={index}>
+                <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
                   <p 
                     key={index} 
                     ref={lineRef}
-                    onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} 
-                    onMouseLeave={() => setLineIndex(-1)}
                     style={{ whiteSpace: 'pre-wrap' }}
                     className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
                   >
