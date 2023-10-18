@@ -158,8 +158,10 @@ export default function Scrap() {
                         likesCount[likes[i]] = likesCount[likes[i]] + 1;
 
                     return (
+                      <div>
+                      <p key={index} className="text-black text-center mt-12 ">{item.user}</p>
                         <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setSelectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
-                          <p key={index} className="text-black text-center mt-12">{item.user}</p>
+                          
                           <p 
                           key={index} 
                           onClick={() => router.push(`/board/${item.user}`)}
@@ -188,11 +190,13 @@ export default function Scrap() {
                             <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleUnscrap} />
                           </div>
                         </div>
+                        </div>
                     );
                 })}
 
                 </div>
             </div>
         </div>
+
     )
 }
