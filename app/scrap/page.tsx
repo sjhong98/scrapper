@@ -158,7 +158,7 @@ export default function Scrap() {
                         likesCount[likes[i]] = likesCount[likes[i]] + 1;
 
                     return (
-                      <div>
+                      <div key={index}>
                       <p key={index} className="text-black text-center mt-12 ">{item.user}</p>
                         <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setSelectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
                           
