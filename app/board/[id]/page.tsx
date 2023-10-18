@@ -5,9 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
-import HomeIcon from '@mui/icons-material/Home';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import StarIcon from '@mui/icons-material/Star';
+import './modules/menuBar';
 import { 
   getFirestore, 
   query,
