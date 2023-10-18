@@ -185,7 +185,7 @@ export default function Board(params: any) {
               likesCount[likes[i]] = likesCount[likes[i]] + 1;
             }
               return (
-                <div>
+                <div key={index}>
                   <p 
                     key={index} 
                     ref={lineRef}
