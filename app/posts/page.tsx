@@ -130,12 +130,6 @@ export default function Posts() {
                 </p>
             </div>
 
-            <div className="right-0 mr-12 mt-12 opacity-1 fixed top-0 cursor-pointer flex flex-col" style={{zIndex:9999}} >
-                <DashboardIcon onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
-                <HomeIcon onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
-                <StarIcon onClick={()=>router.push('/scrap')} onMouseOver={()=>setMenuScrapOver(true)} onMouseLeave={()=>setMenuScrapOver(false)} className={menuScrapOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
-            </div>
-
             <div className="w-5/6 h-screen">
                 <div className="h-1/5" />
                 <div className="h-auto flex flex-col justify-center items-center">

@@ -3,26 +3,10 @@
 // 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
-import HomeIcon from '@mui/icons-material/Home';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import LogoutIcon from '@mui/icons-material/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
-import StarIcon from '@mui/icons-material/Star';
-import { 
-  getFirestore, 
-  addDoc,   
-  updateDoc,   
-  getDocs,  
-  getDoc,  
-  deleteDoc, 
-  collection,
-  orderBy,
-  query,
-  doc     
- } from "firebase/firestore";
-
+import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc } from "firebase/firestore";
+import './modules/menuBar';
 import './styles/main.css';
 
 export default function Home() {
@@ -31,8 +15,6 @@ export default function Home() {
   const logoRef = useRef<HTMLParagraphElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
@@ -41,13 +23,7 @@ export default function Home() {
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
-  const [selectedId, setselectedId] = useState<string>("");;
-  const [menuHomeOver, setMenuHomeOver] = useState(false);
-  const [menuMyOver, setMenuMyOver] = useState(false);
-  const [menuScrapOver, setMenuScrapOver] = useState(false);
-  const [menuLogoutOver, setMenuLogoutOver] = useState(false);
-  // eslint-disable-next-linelint-disable @typescript-eslint/no-empty-function */
-  const [showId, setShowId] = useState(false);
+  const [selectedId, setselectedId] = useState<string>("");
   const previousTime:any = new Date('2023-10-15T12:00:00');
 
   const [postList, setPostList] = useState([]);
@@ -295,12 +271,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="right-0 mr-12 mt-12 opacity-0 fixed top-0 cursor-pointer flex flex-col" style={{zIndex:9999}} ref={menuRef} >
-          <DashboardIcon onClick={()=>router.push('/posts')} onMouseOver={()=>setMenuHomeOver(true)} onMouseLeave={()=>setMenuHomeOver(false)} className={menuHomeOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black'}} />
-          <HomeIcon onClick={()=>router.push('/')} onMouseOver={()=>setMenuMyOver(true)} onMouseLeave={()=>setMenuMyOver(false)} className={menuMyOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
-          <StarIcon onClick={()=>router.push('/scrap')} onMouseOver={()=>setMenuScrapOver(true)} onMouseLeave={()=>setMenuScrapOver(false)} className={menuScrapOver ? "scale-up" : "scale-down"} sx={{fontSize:50, color:'black', marginTop:'3vh'}} />
-          <LogoutIcon onClick={()=>{sessionStorage.clear(); window.location.reload()}} onMouseOver={()=>{setShowId(true); setMenuLogoutOver(true);}} onMouseLeave={()=>{setShowId(false); setMenuLogoutOver(false);}} className={menuLogoutOver ? "scale-up" : "scale-down"} sx={{fontSize:40, marginLeft:'8px', color:'black', marginTop:'3vh'}} />
-      </div>
+      
 
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
         <input placeholder="ID" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
