@@ -148,15 +148,17 @@ export default function Home() {
   const uploadMsg = (word: string) => {
     let currentTime:any = new Date();
     let uploadTime = currentTime - previousTime;
-    addDoc(collection(db, 'posts'), {
-      msg: word,
-      likes: "",
-      user: id,
-      time: uploadTime
-    })
-
-    getContentFromDb();
-    setWriting("");
+    if(word !== ""){
+      addDoc(collection(db, 'posts'), {
+        msg: word,
+        likes: "",
+        user: id,
+        time: uploadTime
+      })
+  
+      getContentFromDb();
+      setWriting("");
+    }
   }
 
   const getContentFromDb = async () => {   
