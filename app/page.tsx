@@ -35,21 +35,18 @@ export default function Home() {
   const router = useRouter();
 
   const [logo, setLogo] = useState("");
-  const [contentRev, setContentRev] = useState([]);
   const [lineIndex, setLineIndex] = useState(-1);
-  const [result, setResult] = useState();
-  const [active, setActive] = useState(false);
   const [msg, setMsg] = useState("");
   const [id, setId] = useState<any>("");
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
   const [selectedId, setselectedId] = useState<string>("");;
-  const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
   const [menuScrapOver, setMenuScrapOver] = useState(false);
   const [menuLogoutOver, setMenuLogoutOver] = useState(false);
+  // eslint-disable-next-linelint-disable @typescript-eslint/no-empty-function */
   const [showId, setShowId] = useState(false);
   const previousTime:any = new Date('2023-10-15T12:00:00');
 
@@ -97,10 +94,11 @@ export default function Home() {
         
       }, 1000);
     }
-
+  // eslint-disable-next-line
     return () => {
       clearInterval(typeLogo);    // 렌더링될때마다 setInterval 활성화되는 것 방지
     };
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -122,13 +120,6 @@ export default function Home() {
       setTextareaHeight((10 + lineCount) * 3.5);
     }
   }, [writing])
-
-  useEffect(() => {
-    if(msgData){
-      let temp = msgData && [...msgData].reverse();
-      setContentRev(temp);
-    }
-  }, [msgData]);
 
   const handleLogin = async (e:any) => {
     if(e.key === 'Enter') {   // 엔터가 눌렸을 때에만 반응
@@ -362,7 +353,7 @@ export default function Home() {
                     })
                   }
                   </p>
-                  <div className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                  <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
                     <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
                     <DeleteIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleDelete} />
                   </div>

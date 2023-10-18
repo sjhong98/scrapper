@@ -29,12 +29,10 @@ export default function Board(params: any) {
   const router = useRouter();
 
   const [logo, setLogo] = useState("");
-  const [contentRev, setContentRev] = useState([]);
   const [lineIndex, setLineIndex] = useState(-1);
   const [postList, setPostList] = useState<Document[]>([]);
-  const [id, setId] = useState(params.params.id);
+  const id:any = params.params.id;
   const [selectedId, setselectedId] = useState<string>("");;
-  const [msgData, setMsgData] = useState([]);
   const [menuHomeOver, setMenuHomeOver] = useState(false);
   const [menuMyOver, setMenuMyOver] = useState(false);
   const [menuScrapOver, setMenuScrapOver] = useState(false);
@@ -71,22 +69,15 @@ export default function Board(params: any) {
     return () => {
       clearInterval(typeLogo);    // 렌더링될때마다 setInterval 활성화되는 것 방지
     };
+    // eslint-disable-next-line
   }, [])
-
-  useEffect(() => {
-    if(msgData){
-      let temp = msgData && [...msgData].reverse();
-      setContentRev(temp);
-    }
-  }, [msgData]);
-
 
   const getContentFromDb = async () => {   
     let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
     await getDocs(q)
-    .then(res => {
+    .then((res:any) => {
       let temp: Document[] = [];
-      res.forEach(doc => {
+      res.forEach((doc:any) => {
         let docTemp = doc.data();
         if(docTemp.user === id) {
           docTemp.postId = doc.id;

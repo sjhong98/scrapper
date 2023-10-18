@@ -50,6 +50,7 @@ export default function Scrap() {
     useEffect(() => {
         setId(sessionStorage.getItem('scrapper-login'))
         getContentFromDb();
+        // eslint-disable-next-line
     }, []);
 
     const getContentFromDb = async () => {
@@ -163,7 +164,7 @@ export default function Scrap() {
 
                     return (
                         <div key={index}>
-                        <p className="text-black text-center mt-12">{item.user}</p>
+                        <p key={index} className="text-black text-center mt-12">{item.user}</p>
                         <p 
                         key={index} 
                         onMouseOver={() => {setLineIndex(index); setSelectedId(item.postId)}} 
