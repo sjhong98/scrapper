@@ -79,10 +79,14 @@ export default function Home() {
       }
     }, 120);
 
-    if(!sessionStorage.getItem('scrapper-login')) 
+    console.log(_id);
+
+    if(!_id) {
       if(loginRef.current !== undefined)
         loginRef.current && loginRef.current.classList.add('login-show-up');
+    }
     else {
+      console.log('then');
       getContentFromDb();
       setTimeout(() => {
         if(inputContainerRef.current !== undefined && inputRef.current !== undefined && menuRef !== undefined) {
@@ -91,7 +95,6 @@ export default function Home() {
           menuRef.current && menuRef.current.classList.add('textarea-show-up');
           inputRef.current && inputRef.current.focus();
         }
-        
       }, 1000);
     }
   // eslint-disable-next-line
