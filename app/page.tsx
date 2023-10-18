@@ -263,18 +263,21 @@ export default function Home() {
 
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
-      <div className="h-1/6 w-1/2 flex justify-center items-center fixed transform translate-y-80 top-0 z-40 logo-move-up">
+
+      {/* logo */}
+      <div className="h-1/6 w-1/2 flex justify-center items-center fixed transform translate-y-80 top-0 z-40 logo-move-up"> 
         <p 
           onMouseOver={handleLogoOver}
           onMouseOut={handleLogoOut}
           onClick={handleLogoClick}
           ref={logoRef} 
-          className="tracking-[-5px] text-gray-500 text-8xl border-r-4 border-black pr-[15px] cursor-pointer" 
+          className="tracking-[-5px] text-gray-500 sm:text-8xl text-6xl border-r-4 border-black pr-[15px] cursor-pointer" 
           style={{fontFamily:'lemon-r'}}>
             {logo}
         </p>
       </div>
 
+      {/* login */}
       <div ref={loginRef} className="w-screen h-screen absolute flex flex-col justify-center items-center transform -translate-y-32 opacity-0">
         <input placeholder="ID" value={id} onChange={e => setId(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
         <input placeholder="PW" value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => {if(e.key === 'Enter') handleLogin(e)}} type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
@@ -282,24 +285,29 @@ export default function Home() {
         <a className="text-xl mt-12" href='/signup' >or  SIGN UP</a>
       </div>
 
-      <div className="fixed opacity-0" style={{zIndex:9999}} ref={menuRef}>
+      {/* menu */}
+      <div className="fixed opacity-0 flex sm:justify-start sm:items-start justify-center items-center " style={{zIndex:9999}} ref={menuRef}>
         <MenuBar />
       </div>
 
-
       <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
+      <div className="h-[100vh] w-screen sm:hidden" />
+
+        {/* text input */}
         <textarea
           value={writing}
           onChange={(e) => setWriting(e.target.value)}
           ref={inputRef} 
           style={{height:`${textareaHeight}vh`}}
-          className="w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none overflow-hidden resize-none" 
+          className="lg:w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none overflow-hidden resize-none" 
         />
-        <div className="w-5/6 h-screen flex flex-col items-center">
+
+        {/* show my posts */}
+        <div className="w-5/6 h-auto flex flex-col items-center">
         { postList.map((item: any, index: any) => {
             const unescapedMsg = item.msg.replace(/\\n/g, "\n");
             
-            // 좋아요 정보 시각화 로직
+            // visualizing likes on text
             let likesCount:any = [];
             let likes = item.likes.split(" ");
             for(let i=0; i<unescapedMsg.length; i++)  // 초기화
@@ -333,13 +341,17 @@ export default function Home() {
                     })
                   }
                   </p>
+
+                  {/* post options */}
                   <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
                     <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
                     <DeleteIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleDelete} />
                   </div>
+
                 </div>
               );  
           })}
+          <div className="h-[10vh] w-screen" />
         </div>
       </div>
       
