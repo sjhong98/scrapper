@@ -3,6 +3,7 @@
 // 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
 import MenuBar from "../../modules/menuBar";
 import StarIcon from '@mui/icons-material/Star';
@@ -23,6 +24,7 @@ export default function Board(params: any) {
   const lineRef = useRef<HTMLDivElement | null>(null);
   const inputContainerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<any>(null);
+  const router = useRouter();
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
@@ -45,6 +47,10 @@ export default function Board(params: any) {
   useEffect(() => {
     let i = 0;
     let ch = params.params.id[0] + params.params.id;
+
+    if(sessionStorage.getItem('scrapper-login')===null) {
+      router.push('/');
+    }
 
     const typeLogo = setInterval(() => {
       if (i < ch.length-1) {

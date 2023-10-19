@@ -39,6 +39,10 @@ export default function Posts() {
     const db = getFirestore(app);
     
     useEffect(() => {
+      if(sessionStorage.getItem('scrapper-login')===null) {
+        router.push('/');
+      }
+      else
         getContentFromDb();
         // eslint-disable-next-line
     }, []);
@@ -52,9 +56,11 @@ export default function Posts() {
             let docTemp = doc.data();
             docTemp.postId = doc.id;
             temp.push(docTemp);
+            console.log(docTemp.time);
           });    
-          setPostList(temp);
-          console.log(temp);
+          let notIntro:any = temp.filter((item:any) => item.time !== 1000000);
+          setPostList(notIntro);
+          console.log(notIntro);
         })
       }
 

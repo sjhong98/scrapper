@@ -17,6 +17,7 @@ export default function Home() {
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<any>(null);
+  const guideRef = useRef<HTMLDivElement>(null);
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
@@ -57,14 +58,11 @@ export default function Home() {
       }
     }, 120);
 
-    console.log(_id);
-
     if(!_id) {
       if(loginRef.current !== undefined)
         loginRef.current && loginRef.current.classList.add('login-show-up');
     }
     else {
-      console.log('then');
       getContentFromDb();
       setTimeout(() => {
         if(inputContainerRef.current !== undefined && inputRef.current !== undefined && menuRef !== undefined) {
@@ -109,6 +107,7 @@ export default function Home() {
         getContentFromDb();
         getDoc(doc(db, 'accounts', id)).then((res:any) => {
           let dbPw = res.data().password;
+          let isNewbie = res.data().isNewbie;
           if(dbPw === null)
             setMsg("존재하지 않는 아이디");
           else {
@@ -260,7 +259,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
+    <div className="h-auto min-h-screen w-screen bg-white flex flex-col items-center">
 
       {/* logo */}
       <div className="h-1/6 w-1/2 flex justify-center items-center fixed transform translate-y-80 top-0 z-40 logo-move-up"> 
@@ -285,75 +284,74 @@ export default function Home() {
       </div>
 
       {/* menu */}
-      <div className="fixed opacity-0 flex sm:justify-start sm:items-start justify-center items-center " style={{zIndex:9999}} ref={menuRef}>
+      <div className="fixed opacity-0 flex sm:justify-start sm:items-start justify-center items-center " style={{zIndex:9998}} ref={menuRef}>
         <MenuBar />
       </div>
 
-      <div ref={inputContainerRef} className="w-screen flex flex-col mt-60 justify-center items-center absolute transform translate-y-16 opacity-0 overflow-hidden">
-      <div className="h-[100vh] w-screen sm:hidden" />
+      <div ref={inputContainerRef} className="w-screen flex flex-col justify-center items-center absolute opacity-0 overflow-hidden">
+        <div className="h-[100vh] w-screen sm:h-[40vh]" />
 
-        {/* text input */}
-        <textarea
-          value={writing}
-          onChange={(e) => setWriting(e.target.value)}
-          ref={inputRef} 
-          style={{height:`${textareaHeight}vh`}}
-          className="lg:w-5/6 text-black text-2xl text-center font-thin mt-80 focus:outline-none overflow-hidden resize-none" 
-        />
+          {/* text input */}
+          <textarea
+            value={writing}
+            onChange={(e) => setWriting(e.target.value)}
+            ref={inputRef} 
+            style={{height:`${textareaHeight}vh`}}
+            className="lg:w-5/6 text-black text-2xl text-center font-thin focus:outline-none overflow-hidden resize-none" 
+          />
 
-        {/* show my posts */}
-        <div className="w-5/6 h-auto flex flex-col items-center">
-        { postList.map((item: any, index: any) => {
-            const unescapedMsg = item.msg.replace(/\\n/g, "\n");
-            
-            // visualizing likes on text
-            let likesCount:any = [];
-            let likes = item.likes.split(" ");
-            for(let i=0; i<unescapedMsg.length; i++)  // 초기화
-              likesCount[i] = 0;
-            for(let i=0; i<likes.length; i++) { // 드래그된 부분의 숫자 증가
-              likesCount[likes[i]] = likesCount[likes[i]] + 1;
-            }
-              return (
-                <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
-                  <p 
-                    key={index} 
-                    ref={lineRef}
-                    style={{ whiteSpace: 'pre-wrap' }}
-                    className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
-                  >
-                  { unescapedMsg.split("").map((char: string, index: number) => {
-                      let changeColor;
-                      if(likesCount[index] > 8) changeColor = '#A6A6A6';
-                      else if(likesCount[index] >= 7) changeColor = '#ADADAD';
-                      else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
-                      else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
-                      else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
-                      else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
-                      else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
-                      else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
-                      else changeColor = '#FFF'
+          {/* show my posts */}
+          <div className="w-5/6 h-auto flex flex-col items-center">
+          { postList.map((item: any, index: any) => {
+              const unescapedMsg = item.msg.replace(/\\n/g, "\n");
+              
+              // visualizing likes on text
+              let likesCount:any = [];
+              let likes = item.likes.split(" ");
+              for(let i=0; i<unescapedMsg.length; i++)  // 초기화
+                likesCount[i] = 0;
+              for(let i=0; i<likes.length; i++) { // 드래그된 부분의 숫자 증가
+                likesCount[likes[i]] = likesCount[likes[i]] + 1;
+              }
+                return (
+                  <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>
+                    <p 
+                      key={index} 
+                      ref={lineRef}
+                      style={{ whiteSpace: 'pre-wrap' }}
+                      className={index === lineIndex ? "leading-[38px] text-black font-extralight p-3 mt-2 text-[20px] text-center rounded-md line-highlight" : "leading-[38px] text-black font-extralight text-[20px] p-3 mt-2 text-center rounded-md line-un-highlight"}
+                    >
+                    { unescapedMsg.split("").map((char: string, index: number) => {
+                        let changeColor;
+                        if(likesCount[index] > 8) changeColor = '#A6A6A6';
+                        else if(likesCount[index] >= 7) changeColor = '#ADADAD';
+                        else if(likesCount[index] >= 6) changeColor = '#B5B5B5';
+                        else if(likesCount[index] >= 5) changeColor = '#BFBFBF';
+                        else if(likesCount[index] >= 4) changeColor = '#CCCCCC';
+                        else if(likesCount[index] >= 3) changeColor = '#D9D9D9';
+                        else if(likesCount[index] >= 2) changeColor = '#E6E6E6';
+                        else if(likesCount[index] >= 1) changeColor = '#F2F2F2';
+                        else changeColor = '#FFF'
 
-                      return (
-                        <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
-                      )
-                    })
-                  }
-                  </p>
+                        return (
+                          <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                        )
+                      })
+                    }
+                    </p>
 
-                  {/* post options */}
-                  <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
-                    <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
-                    <DeleteIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleDelete} />
+                    {/* post options */}
+                    <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
+                      <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
+                      <DeleteIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleDelete} />
+                    </div>
+
                   </div>
-
-                </div>
-              );  
-          })}
-          <div className="h-[10vh] w-screen" />
+                );  
+            })}
+            <div className="h-[10vh] w-screen" />
+          </div>
         </div>
-      </div>
-      
     </div>
   )
 }

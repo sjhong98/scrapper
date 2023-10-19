@@ -31,6 +31,9 @@ export default function Scrap() {
     const db:any = getFirestore(app);
     
     useEffect(() => {
+      if(sessionStorage.getItem('scrapper-login')===null) {
+        router.push('/');
+      }
         setId(sessionStorage.getItem('scrapper-login'))
         getContentFromDb();
         // eslint-disable-next-line

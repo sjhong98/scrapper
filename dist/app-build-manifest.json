@@ -6,23 +6,28 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/posts/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/posts/page.css",
-      "static/chunks/app/posts/page.js"
-    ],
     "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/page.css",
       "static/chunks/app/page.js"
     ],
-    "/board/[id]/page": [
+    "/signup/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/board/[id]/page.css",
-      "static/chunks/app/board/[id]/page.js"
+      "static/chunks/app/signup/page.js"
+    ],
+    "/posts/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/posts/page.css",
+      "static/chunks/app/posts/page.js"
+    ],
+    "/scrap/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/scrap/page.css",
+      "static/chunks/app/scrap/page.js"
     ]
   }
 }
