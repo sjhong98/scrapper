@@ -58,7 +58,7 @@ export default function Posts() {
             temp.push(docTemp);
             console.log(docTemp.time);
           });    
-          let notIntro:any = temp.filter((item:any) => item.time !== 1000000);
+          let notIntro:any = temp.filter((item:any) => item.time !== 0);
           setPostList(notIntro);
           console.log(notIntro);
         })
