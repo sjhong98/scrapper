@@ -143,7 +143,7 @@ export default function Board(params: any) {
   };
 
   const handleScrap = () => {   // 나중에 아이콘 채워지도록 만들기
-    let id:any = sessionStorage.getItem('scrapper');
+    let id:any = sessionStorage.getItem('scrapper-login');
     getDoc(doc(db, 'accounts', id))
     .then((res:any) => {
       let _scrap = res.data().scrap;
