@@ -60,15 +60,15 @@ export default function Signup() {
     return (
         <div className="w-screen h-screen bg-white flex flex-col">
             <div className="h-1/6 w-screen flex justify-center items-center fixed">
-                <p className="text-black font-bold text-8xl border-r-4 border-black pr-2 sm:text-8xl text-6xl" style={{fontFamily:'lemon-r'}}>
+                <p className="text-black font-bold sm:text-8xl text-6xl border-r-4 border-black pr-2 sm:text-8xl text-6xl" style={{fontFamily:'lemon-r'}}>
                     SCRAPPER
                 </p>
             </div>
             <div className="w-screen h-1/6" />
             <div className="w-screen h-5/6 flex flex-col justify-center items-center mb-32">
-                <input value={id} onChange={(e) => setId(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="ID" type='text' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
-                <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PASSWORD" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
-                <input value={pwCheck} onChange={(e) => setPwCheck(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PW CHECK" type='password' className="w-1/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
+                <input value={id} onChange={(e) => setId(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="ID" type='text' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
+                <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PASSWORD" type='password' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
+                <input value={pwCheck} onChange={(e) => setPwCheck(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PW CHECK" type='password' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
                 <button onClick={(e) => {handleSignup(e)}} className="sm:w-1/5 w-3/5 rounded-md bg-black text-white text-3xl mt-10">SIGN UP</button>
                 <p className="text-xl mt-12">{msg}</p>
             </div>
