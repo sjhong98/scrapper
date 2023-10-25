@@ -1,19 +1,11 @@
 "use client";
 
-// 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
-
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
 import { initializeApp } from "firebase/app";
 import MenuBar from "../modules/menuBar";
 import StarIcon from '@mui/icons-material/Star';
-import { 
-  getFirestore, 
-  collection,
-  orderBy,
-  updateDoc,   // update document
-  getDocs,  // 전체 읽어오기
-  getDoc,   // 문서 하나 읽어오기
+import {  getFirestore, collection,orderBy,updateDoc,getDocs, getDoc,  
   doc,       // 특정 데이터 읽기
   query,
  } from "firebase/firestore";
