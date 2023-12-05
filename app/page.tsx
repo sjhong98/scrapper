@@ -3,11 +3,12 @@
 // 서버에 reverse된 순서로 저장했다가, 0~30 인덱스만 받아오기 -> 자동으로 갱신되는 것
 
 import { useEffect, useRef, useState } from "react";
+import React from 'react';
 import { initializeApp } from "firebase/app";
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
-import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc, DocumentSnapshot, DocumentData } from "firebase/firestore";
-import { handleScrap, PostList, handleTextSelection, getContentFromDb } from "./functions";
+import { getFirestore, addDoc, getDoc, deleteDoc, collection, orderBy, query, doc, DocumentSnapshot, DocumentData } from "firebase/firestore";
+import { handleScrap, PostList, handleTextSelection, getContentFromDb, uploadMsg } from "./functions";
 import MenuBar from "./modules/menuBar";
 import './styles/main.css';
 
@@ -27,7 +28,7 @@ export default function Home() {
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
   const [selectedId, setselectedId] = useState<string>("");
-  const previousTime:Date = new Date('2023-10-15T12:00:00');
+  
 
   const [postList, setPostList] = useState<PostList[]>([]);
 
@@ -105,7 +106,7 @@ export default function Home() {
     }
   }, [writing])
 
-  const handleLogin = async (e:React.MouseEvent) => {
+  const handleLogin = async (e:React.KeyboardEvent<HTMLInputElement>) => {
       if(!id || !pw)
         setMsg("모두 입력해주세요");
       else {
@@ -128,7 +129,12 @@ export default function Home() {
                 inputRef.current && inputRef.current.classList.add('textarea-show-up');
                 inputRef.current && inputRef.current.focus();
               }, 100);
-              getContentFromDb();
+              const fetchData = async ():Promise<void> => {
+                const res:any = await getContentFromDb();
+                setPostList(res);
+              }
+              fetchData();
+              console.log("===== app/page.tsx : PostList =====\n", postList);
             }
             else 
               setMsg("비밀번호 미일치");
@@ -136,6 +142,10 @@ export default function Home() {
         });
       }
   };
+
+  useEffect(() => {
+    console.log("final : ", postList);
+  }, [postList]);
 
   const handleLogoOver = () => {
     logoRef.current && logoRef.current.classList.add('font-black');
@@ -147,22 +157,7 @@ export default function Home() {
 
   const handleLogoClick = () => {
     uploadMsg(writing);
-  }
-  
-  const uploadMsg = (word: string) => {
-    let currentTime:Date = new Date();
-    let uploadTime = currentTime.getTime() - previousTime.getTime();
-    if(word !== ""){
-      addDoc(collection(db, 'posts'), {
-        msg: word,
-        likes: "",
-        user: id,
-        time: uploadTime
-      })
-  
-      getContentFromDb();
-      setWriting("");
-    }
+    setWriting("");
   }
 
   const handleDelete = () => {
@@ -170,7 +165,11 @@ export default function Home() {
     .then((res:any) => {
       alert("삭제되었습니다.");
     })
-    getContentFromDb();
+    const fetchData = async ():Promise<void> => {
+      const res:any = await getContentFromDb();
+      setPostList(res);
+    }
+    fetchData();
   }
 
   return (
@@ -217,7 +216,7 @@ export default function Home() {
 
           {/* show my posts */}
           <div className="w-5/6 h-auto flex flex-col items-center">
-          { postList.map((item: PostList, index: number) => {
+          { postList !== undefined && postList.map((item: PostList, index: number) => {
               const unescapedMsg = item.msg.replace(/\\n/g, "\n");
               
               // visualizing likes on text

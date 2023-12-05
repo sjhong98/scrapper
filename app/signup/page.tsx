@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { initializeApp } from "firebase/app";
 import { getFirestore, setDoc, getDoc, doc, addDoc, collection } from "firebase/firestore";
@@ -24,7 +25,7 @@ export default function Signup() {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const handleSignup = (e:any) => {
+    const handleSignup = (e:React.MouseEvent) => {
         e.preventDefault(); 
         if(!id || !pw || !pwCheck) 
             setMsg("모두 입력해주세요")
@@ -66,10 +67,36 @@ export default function Signup() {
             </div>
             <div className="w-screen h-1/6" />
             <div className="w-screen h-5/6 flex flex-col justify-center items-center mb-32">
-                <input value={id} onChange={(e) => setId(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="ID" type='text' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" />
-                <input value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PASSWORD" type='password' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
-                <input value={pwCheck} onChange={(e) => setPwCheck(e.target.value)} onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} placeholder="PW CHECK" type='password' className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" />
-                <button onClick={(e) => {handleSignup(e)}} className="sm:w-1/5 w-3/5 rounded-md bg-black text-white text-3xl mt-10">SIGN UP</button>
+                <input 
+                    value={id} 
+                    onChange={(e) => setId(e.target.value)} 
+                    onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} 
+                    placeholder="ID" 
+                    type='text' 
+                    className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black" 
+                />
+                <input 
+                    value={pw} 
+                    onChange={(e) => setPw(e.target.value)} 
+                    onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} 
+                    placeholder="PASSWORD" 
+                    type='password' 
+                    className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" 
+                />
+                <input 
+                    value={pwCheck} 
+                    nChange={(e) => setPwCheck(e.target.value)} 
+                    onKeyDown={(e) => {if(e.key === 'Enter') handleSignup(e)}} 
+                    placeholder="PW CHECK" 
+                    type='password' 
+                    className="sm:w-1/5 w-3/5 focus:outline-none text-center text-3xl border-b-2 border-black pb-2 placeholder-black mt-12" 
+                />
+                <button 
+                    onClick={(e) => {handleSignup(e)}} 
+                    className="sm:w-1/5 w-3/5 rounded-md bg-black text-white text-3xl mt-10"
+                >
+                    SIGN UP
+                </button>
                 <p className="text-xl mt-12">
                     {msg}
                 </p>

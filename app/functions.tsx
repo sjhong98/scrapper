@@ -1,4 +1,4 @@
-import { getFirestore, getDoc, updateDoc, doc, query, collection, orderBy, getDocs } from "firebase/firestore";
+import { getFirestore, getDoc, updateDoc, doc, query, collection, orderBy, getDocs, addDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
@@ -102,7 +102,8 @@ const uploadLikes= (postId: string, newLikes: string) => {
 
 export const getContentFromDb = async () => {   
   let id = sessionStorage.getItem('scrapper-login');
-  let q = query(collection(db, 'posts'), orderBy('time', 'desc')) // async 함수 없앰
+  console.log("id : ", id);
+  let q = query(collection(db, 'posts'), orderBy('time', 'desc')) 
   await getDocs(q).then((res:any) => {
     let temp:any = [];
     res.forEach((doc:any) => {
@@ -112,6 +113,38 @@ export const getContentFromDb = async () => {
         temp.push(docTemp);
       }
     });    
+    console.log("===== at functions =====\n", temp);
     return temp;
+  })
+}
+
+export const uploadMsg = (word: string) => {
+  let previousTime:Date = new Date('2023-10-15T12:00:00');
+  let currentTime:Date = new Date();
+  let uploadTime = currentTime.getTime() - previousTime.getTime();
+  if(word !== ""){
+    addDoc(collection(db, 'posts'), {
+      msg: word,
+      likes: "",
+      user: id,
+      time: uploadTime
+    })
+
+    getContentFromDb();
+    
+  }
+}
+
+export const handleUnscrap = (selectedId:string) => {   // 나중에 아이콘 채워지도록 만들기
+  getDoc(doc(db, 'accounts', id))
+  .then((res:any) => {
+    let _scrap = res.data().scrap;
+    let result = _scrap.find((item:any) => {item !== selectedId});
+    updateDoc(doc(db, 'accounts', id), {
+      scrap: result
+    })
+    .then((res:any) => {
+      alert("스크랩이 취소되었습니다.");
+    })
   })
 }

@@ -49,10 +49,10 @@ export default function Board(params: BoardParams) {
     menuRef.current && menuRef.current.classList.add('textarea-show-up');
 
     const fetchData = async ():Promise<void> => {
-        const res:any = await getContentFromDb();
-        setPostList(res);
-      }
-      fetchData();
+      const res:any = await getContentFromDb();
+      setPostList(res);
+    }
+    fetchData();
 
     return () => {
       clearInterval(typeLogo);    // 렌더링될때마다 setInterval 활성화되는 것 방지
