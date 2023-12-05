@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
-import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc } from "firebase/firestore";
+import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc, DocumentSnapshot, DocumentData } from "firebase/firestore";
 import MenuBar from "./modules/menuBar";
 import './styles/main.css';
 
@@ -16,20 +16,19 @@ export default function Home() {
   const logoRef = useRef<HTMLParagraphElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<any>(null);
-  const guideRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
   const [msg, setMsg] = useState("");
-  const [id, setId] = useState<any>("");
+  const [id, setId] = useState<string>("");
   const [pw, setPw] = useState("");
   const [writing, setWriting] = useState("");
   const [textareaHeight, setTextareaHeight] = useState(10);
   const [selectedId, setselectedId] = useState<string>("");
-  const previousTime:any = new Date('2023-10-15T12:00:00');
+  const previousTime:Date = new Date('2023-10-15T12:00:00');
 
-  const [postList, setPostList] = useState([]);
+  const [postList, setPostList] = useState<PostList[]>([]);
 
   const firebaseConfig = {
     apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
@@ -43,11 +42,18 @@ export default function Home() {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  interface PostList {
+    postId: string,
+    msg: string,
+    likes: string,
+  }
+
   useEffect(() => {
-    let _id:any = sessionStorage.getItem('scrapper-login');
-    setId(_id && _id);
-    let i = 0;
-    let ch = "SSCRAPPER";
+    let _id:string|null = sessionStorage.getItem('scrapper-login');
+    if(_id)
+      setId(_id);
+    let i:number = 0;
+    let ch:string = "SSCRAPPER";
 
     const typeLogo = setInterval(() => {
       if (i < ch.length-1) {
@@ -100,14 +106,16 @@ export default function Home() {
     }
   }, [writing])
 
-  const handleLogin = async (e:any) => {
+  const handleLogin = async (e:React.MouseEvent) => {
       if(!id || !pw)
         setMsg("모두 입력해주세요");
       else {
         getContentFromDb();
-        getDoc(doc(db, 'accounts', id)).then((res:any) => {
-          let dbPw = res.data().password;
-          let isNewbie = res.data().isNewbie;
+        getDoc(doc(db, 'accounts', id))
+        .then((res: any) => {
+            let dbPw = res.data().password;
+            let isNewbie = res.data().isNewbie;
+          
           if(dbPw === null)
             setMsg("존재하지 않는 아이디");
           else {
@@ -143,8 +151,8 @@ export default function Home() {
   }
   
   const uploadMsg = (word: string) => {
-    let currentTime:any = new Date();
-    let uploadTime = currentTime - previousTime;
+    let currentTime:Date = new Date();
+    let uploadTime = currentTime.getTime() - previousTime.getTime();
     if(word !== ""){
       addDoc(collection(db, 'posts'), {
         msg: word,
@@ -187,21 +195,27 @@ export default function Home() {
   const handleTextSelection = () => {
     let startIndex;
     let endIndex;
-    const findObj = postList.find((item: any) => (item as any).postId === selectedId) as any;
+    const _postList: PostList[] = postList;
+
+    const findObj:PostList|undefined = _postList.find((item:PostList) => item.postId === selectedId);
 
     const selection = window.getSelection();
 
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString();
-      startIndex = findObj.msg.indexOf(selectedText);
-      endIndex = startIndex + selectedText.length - 1;
+      if(findObj !== undefined) {
+        startIndex = findObj.msg.indexOf(selectedText);
+        endIndex = startIndex + selectedText.length - 1;
+      }
     }
 
     let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
-    for(let i=0; i<startIndex; i++) {
-      testLineBreaks += findObj.msg[i];
-    }
+    if(startIndex !== undefined)
+      for(let i=0; i<startIndex; i++) {
+        if(findObj != undefined)
+        testLineBreaks += findObj.msg[i];
+      }
     let linebreaks = 0;
     if(testLineBreaks.match(/\\n/g) !== null) {
       const _testLineBreaks = testLineBreaks.match(/\\n/g);
@@ -210,24 +224,25 @@ export default function Home() {
     }
       
 
-    if(linebreaks > 0) {
+    if(linebreaks > 0 && startIndex !== undefined) {
       startIndex -= linebreaks;
       if(endIndex)
       endIndex -= linebreaks;
     } 
 
     let length;
-    if(endIndex !== undefined)
-    length = endIndex - startIndex;
+    if(endIndex !== undefined && startIndex !== undefined)
+      length = endIndex - startIndex;
     let count = startIndex;
 
-    if(length!==undefined)
+    if(length !== undefined && findObj !== undefined && count !== undefined)
       for(let i=0; i<length+1; i++) {
         findObj.likes = findObj.likes + count.toString() + " ";
         count++;
       }
 
-    uploadLikes(selectedId, findObj.likes);
+    if(selectedId && findObj !== undefined)
+      uploadLikes(selectedId, findObj.likes);
   };
 
   const handleDelete = () => {
@@ -238,7 +253,7 @@ export default function Home() {
     getContentFromDb();
   }
 
-  const handleScrap = () => {   // 나중에 아이콘 채워지도록 만들기
+  const handleScrap = () => {   
     getDoc(doc(db, 'accounts', id))
     .then((res:any) => {
       let _scrap = res.data().scrap;
@@ -252,7 +267,7 @@ export default function Home() {
       updateDoc(doc(db, 'accounts', id), {
         scrap: _scrap
       })
-      .then((res:any) => {
+      .then(() => {
         alert("스크랩되었습니다.");
       })
     })
@@ -302,16 +317,16 @@ export default function Home() {
 
           {/* show my posts */}
           <div className="w-5/6 h-auto flex flex-col items-center">
-          { postList.map((item: any, index: any) => {
+          { postList.map((item: PostList, index: number) => {
               const unescapedMsg = item.msg.replace(/\\n/g, "\n");
               
               // visualizing likes on text
-              let likesCount:any = [];
-              let likes = item.likes.split(" ");
+              let likesCount:number[] = [];
+              let likes:string[] = item.likes.split(" ");
               for(let i=0; i<unescapedMsg.length; i++)  // 초기화
                 likesCount[i] = 0;
               for(let i=0; i<likes.length; i++) { // 드래그된 부분의 숫자 증가
-                likesCount[likes[i]] = likesCount[likes[i]] + 1;
+                likesCount[Number(likes[i])] = likesCount[Number(likes[i])] + 1;
               }
                 return (
                   <div key={index} className="flex flex-row justify-center items-center ml-6" onMouseOver={() => {setLineIndex(index); setselectedId(item.postId)}} onMouseLeave={() => setLineIndex(-1)}>

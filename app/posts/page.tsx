@@ -29,6 +29,12 @@ export default function Posts() {
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    interface PostList {
+      postId: string,
+      msg: string,
+      likes: string,
+    }
     
     useEffect(() => {
       if(sessionStorage.getItem('scrapper-login')===null) {
