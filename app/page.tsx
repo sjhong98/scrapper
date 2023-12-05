@@ -7,6 +7,7 @@ import { initializeApp } from "firebase/app";
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
 import { getFirestore, addDoc, updateDoc, getDocs, getDoc, deleteDoc, collection, orderBy, query, doc, DocumentSnapshot, DocumentData } from "firebase/firestore";
+import { handleScrap, PostList, handleTextSelection, getContentFromDb } from "./functions";
 import MenuBar from "./modules/menuBar";
 import './styles/main.css';
 
@@ -42,12 +43,6 @@ export default function Home() {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  interface PostList {
-    postId: string,
-    msg: string,
-    likes: string,
-  }
-
   useEffect(() => {
     let _id:string|null = sessionStorage.getItem('scrapper-login');
     if(_id)
@@ -69,7 +64,11 @@ export default function Home() {
         loginRef.current && loginRef.current.classList.add('login-show-up');
     }
     else {
-      getContentFromDb();
+      const fetchData = async ():Promise<void> => {
+        const res:any = await getContentFromDb();
+        setPostList(res);
+      }
+      fetchData();
       setTimeout(() => {
         if(inputContainerRef.current !== undefined && inputRef.current !== undefined && menuRef !== undefined) {
           inputContainerRef.current && inputContainerRef.current.classList.add('textarea-show-up');
@@ -166,111 +165,12 @@ export default function Home() {
     }
   }
 
-  const getContentFromDb = async () => {   
-    let id = sessionStorage.getItem('scrapper-login');
-    let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
-    await getDocs(q)
-    .then((res:any) => {
-      let temp:any = [];
-      res.forEach((doc:any) => {
-        let docTemp = doc.data();
-        if(docTemp.user === id) {
-          docTemp.postId = doc.id;
-          temp.push(docTemp);
-        }
-      });    
-      setPostList(temp);
-    })
-  }
-
-  const uploadLikes= (postId: string, newLikes: string) => {
-
-    const documentRef = doc(db, 'posts', postId);
-    updateDoc(documentRef, {
-      likes: newLikes
-    });
-    getContentFromDb();
-  }
-
-  const handleTextSelection = () => {
-    let startIndex;
-    let endIndex;
-    const _postList: PostList[] = postList;
-
-    const findObj:PostList|undefined = _postList.find((item:PostList) => item.postId === selectedId);
-
-    const selection = window.getSelection();
-
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const selectedText = range.toString();
-      if(findObj !== undefined) {
-        startIndex = findObj.msg.indexOf(selectedText);
-        endIndex = startIndex + selectedText.length - 1;
-      }
-    }
-
-    let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
-    if(startIndex !== undefined)
-      for(let i=0; i<startIndex; i++) {
-        if(findObj != undefined)
-        testLineBreaks += findObj.msg[i];
-      }
-    let linebreaks = 0;
-    if(testLineBreaks.match(/\\n/g) !== null) {
-      const _testLineBreaks = testLineBreaks.match(/\\n/g);
-      const _lineBreaks = _testLineBreaks ? _testLineBreaks.length : 0
-      linebreaks = _lineBreaks
-    }
-      
-
-    if(linebreaks > 0 && startIndex !== undefined) {
-      startIndex -= linebreaks;
-      if(endIndex)
-      endIndex -= linebreaks;
-    } 
-
-    let length;
-    if(endIndex !== undefined && startIndex !== undefined)
-      length = endIndex - startIndex;
-    let count = startIndex;
-
-    if(length !== undefined && findObj !== undefined && count !== undefined)
-      for(let i=0; i<length+1; i++) {
-        findObj.likes = findObj.likes + count.toString() + " ";
-        count++;
-      }
-
-    if(selectedId && findObj !== undefined)
-      uploadLikes(selectedId, findObj.likes);
-  };
-
   const handleDelete = () => {
     deleteDoc(doc(db, 'posts', selectedId))
     .then((res:any) => {
       alert("삭제되었습니다.");
     })
     getContentFromDb();
-  }
-
-  const handleScrap = () => {   
-    getDoc(doc(db, 'accounts', id))
-    .then((res:any) => {
-      let _scrap = res.data().scrap;
-      for(let i=0; i<_scrap.length; i++) {
-        if(_scrap[i] === selectedId) {
-          alert("이미 스크랩된 게시물입니다.");
-          return;
-        }
-      }
-      _scrap.push(selectedId);
-      updateDoc(doc(db, 'accounts', id), {
-        scrap: _scrap
-      })
-      .then(() => {
-        alert("스크랩되었습니다.");
-      })
-    })
   }
 
   return (
@@ -349,7 +249,7 @@ export default function Home() {
                         else changeColor = '#FFF'
 
                         return (
-                          <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                          <span key={index} onMouseUp={() => {handleTextSelection(postList, selectedId)}} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
                         )
                       })
                     }
@@ -357,7 +257,7 @@ export default function Home() {
 
                     {/* post options */}
                     <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
-                      <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleScrap} />
+                      <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={() => {handleScrap(id, selectedId)}} />
                       <DeleteIcon sx={{color:'#333', cursor:'pointer'}} onClick={handleDelete} />
                     </div>
 

@@ -4,10 +4,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
-import { initializeApp } from "firebase/app";
 import MenuBar from "../../modules/menuBar";
 import StarIcon from '@mui/icons-material/Star';
-import { getFirestore, query,getDoc,orderBy, updateDoc, getDocs, doc, collection, DocumentData, DocumentSnapshot } from "firebase/firestore";
+import { handleScrap, PostList, handleTextSelection, getContentFromDb } from "@/app/functions";
 
 import '../../styles/main.css';
 
@@ -26,26 +25,8 @@ export default function Board(params: BoardParams) {
   const [logo, setLogo] = useState("");
   const [lineIndex, setLineIndex] = useState(-1);
   const [postList, setPostList] = useState<PostList[]>([]);
-  const curId:string = params.params.id;
   const myId:string = sessionStorage.getItem('scrapper-login') ?? "null";     // nullish 병합 연산자 -> sessionStorage에 해당 값이 없을 경우 null 리턴 -> "null"이라는 문자열로 대체
   const [selectedId, setselectedId] = useState<string>("");
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
-    authDomain: "scrapper-9558b.firebaseapp.com",
-    databaseURL: "https://scrapper-9558b-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "scrapper-9558b",
-    storageBucket: "scrapper-9558b.appspot.com",
-    messagingSenderId: "241265284136",
-    appId: "1:241265284136:web:253ec9f008e31a3d03911d"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  interface PostList {
-    postId: string,
-    msg: string,
-    likes: string,
-  }
 
   useEffect(() => {
     let i = 0;
@@ -66,91 +47,18 @@ export default function Board(params: BoardParams) {
 
     inputContainerRef.current && inputContainerRef.current.classList.add('textarea-show-up');
     menuRef.current && menuRef.current.classList.add('textarea-show-up');
-    getContentFromDb();
+
+    const fetchData = async ():Promise<void> => {
+        const res:any = await getContentFromDb();
+        setPostList(res);
+      }
+      fetchData();
 
     return () => {
       clearInterval(typeLogo);    // 렌더링될때마다 setInterval 활성화되는 것 방지
     };
     // eslint-disable-next-line
   }, [])
-
-  const getContentFromDb = async () => {   
-    let q = query(collection(db, 'posts'), orderBy('time', 'desc'))
-    await getDocs(q)
-    .then((res:any) => {
-      let temp: PostList[] = [];
-      res.forEach((doc:any) => {
-        let docTemp = doc.data();
-        if(docTemp.user === curId) {
-          docTemp.postId = doc.id;
-          temp.push(docTemp);
-        }
-      });    
-      setPostList(temp);
-    })
-  }
-
-  const uploadLikes= (postId: string, newLikes: string) => {
-    console.log(postId, newLikes)
-
-    const documentRef = doc(db, 'posts', postId);
-    updateDoc(documentRef, {
-      likes: newLikes
-    });
-    getContentFromDb();
-  }
-
-  const handleTextSelection = () => {
-    let startIndex;
-    let endIndex;
-    let _postList:PostList[] = postList;
-    const findObj:PostList|undefined = _postList.find((item: PostList) => (item).postId === selectedId);
-
-    const selection = window.getSelection();
-
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const selectedText = range.toString();
-      if(findObj !== undefined && startIndex !== undefined) {
-        startIndex = findObj.msg.indexOf(selectedText);
-        endIndex = startIndex + selectedText.length - 1;
-      }
-    }
-
-    let testLineBreaks = "";    // 줄바꿈 문자만큼 하이라이트를 앞 당김
-    if(startIndex !== undefined)
-    for(let i=0; i<startIndex; i++) {
-      if(findObj !== undefined)
-        testLineBreaks += findObj.msg[i];
-    }
-    let linebreaks = 0;
-    const matches = testLineBreaks.match(/\\n/g);
-    if (matches !== null) {
-      linebreaks = matches.length;
-    }
-
-    if(linebreaks > 0 && startIndex !== undefined) {
-      startIndex -= linebreaks;
-      if(endIndex !== undefined)
-        endIndex -= linebreaks;
-    } 
-
-    let length
-    if(endIndex !== undefined && startIndex !== undefined)
-      length = endIndex - startIndex;
-    let count = startIndex;
-
-    if(length !== undefined && findObj !== undefined && count !== undefined)
-      for(let i=0; i<length+1; i++) {
-        findObj.likes = findObj.likes + count.toString() + " ";
-        count++;
-      }
-
-    if(findObj !== undefined)
-      uploadLikes(selectedId, findObj.likes);
-  };
-
-  
 
   return (
     <div className="h-auto min-h-screen w-screen bg-white flex flex-col justify-center items-center">
@@ -199,13 +107,13 @@ export default function Board(params: BoardParams) {
                       else changeColor = '#FFF'
 
                       return (
-                        <span key={index} onMouseUp={handleTextSelection} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
+                        <span key={index} onMouseUp={() => {handleTextSelection(postList, selectedId)}} className="text-black" style={{ backgroundColor: changeColor, userSelect: 'text' }}>{char}</span>
                       )
                     })
                   }
                   </p>
                   <div key={index} className={index === lineIndex ? "opacity-1" : "opacity-0"}>
-                    <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={() => handleScrap(id)} />
+                    <StarIcon sx={{color:'#333', cursor:'pointer'}} onClick={() => handleScrap(myId, selectedId)} />
                   </div>
                 </div>
               );
