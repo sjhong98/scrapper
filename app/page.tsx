@@ -129,11 +129,13 @@ export default function Home() {
                 inputRef.current && inputRef.current.classList.add('textarea-show-up');
                 inputRef.current && inputRef.current.focus();
               }, 100);
+
               const fetchData = async ():Promise<void> => {
-                const res:any = await getContentFromDb();
+                const res:PostList[] = await getContentFromDb();
                 setPostList(res);
               }
               fetchData();
+
               console.log("===== app/page.tsx : PostList =====\n", postList);
             }
             else 

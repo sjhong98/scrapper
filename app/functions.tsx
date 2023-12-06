@@ -100,22 +100,27 @@ const uploadLikes= (postId: string, newLikes: string) => {
   getContentFromDb();
 }
 
-export const getContentFromDb = async () => {   
-  let id = sessionStorage.getItem('scrapper-login');
-  console.log("id : ", id);
-  let q = query(collection(db, 'posts'), orderBy('time', 'desc')) 
-  await getDocs(q).then((res:any) => {
-    let temp:any = [];
-    res.forEach((doc:any) => {
+export const getContentFromDb = async () => {
+  try {
+    let id = sessionStorage.getItem('scrapper-login');
+    console.log("id : ", id);
+    let q = query(collection(db, 'posts'), orderBy('time', 'desc'));
+
+    const res: any = await getDocs(q);
+    let temp: PostList[] = [];
+
+    res.forEach((doc: any) => {
       let docTemp = doc.data();
-      if(docTemp.user === id) {
+      if (docTemp.user === id) {
         docTemp.postId = doc.id;
         temp.push(docTemp);
       }
-    });    
-    console.log("===== at functions =====\n", temp);
+    });
     return temp;
-  })
+    
+  } catch (error) {
+    throw error;
+  }
 }
 
 export const uploadMsg = (word: string) => {
