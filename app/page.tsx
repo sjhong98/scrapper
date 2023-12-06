@@ -7,7 +7,7 @@ import React from 'react';
 import { initializeApp } from "firebase/app";
 import DeleteIcon from '@mui/icons-material/Delete';
 import StarIcon from '@mui/icons-material/Star';
-import { getFirestore, addDoc, getDoc, deleteDoc, collection, orderBy, query, doc, DocumentSnapshot, DocumentData } from "firebase/firestore";
+import { getFirestore, getDoc, deleteDoc, doc, } from "firebase/firestore";
 import { handleScrap, PostList, handleTextSelection, getContentFromDb, uploadMsg } from "./functions";
 import MenuBar from "./modules/menuBar";
 import './styles/main.css';

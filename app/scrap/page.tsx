@@ -4,10 +4,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'
-import { initializeApp } from "firebase/app";
 import MenuBar from "../modules/menuBar";
 import StarIcon from '@mui/icons-material/Star';
-import { getFirestore, collection, orderBy, updateDoc, getDocs, getDoc, doc, query, deleteDoc } from "firebase/firestore";
 import { PostList, getContentFromDb, handleTextSelection, handleUnscrap } from "../functions";
 
 import '../styles/main.css';

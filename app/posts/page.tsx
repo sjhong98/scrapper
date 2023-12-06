@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from 'next/navigation'
-import { initializeApp } from "firebase/app";
 import MenuBar from "../modules/menuBar";
 import StarIcon from '@mui/icons-material/Star';
-import {  getFirestore, collection,orderBy,updateDoc,getDocs, getDoc, doc, query } from "firebase/firestore";
 import { PostList, getContentFromDb, handleTextSelection, handleScrap } from "../functions";
 import '../styles/main.css';
 
@@ -15,18 +13,6 @@ export default function Posts() {
     const [lineIndex, setLineIndex] = useState(-1);
     const [selectedId, setSelectedId] = useState<string>("");
     const id:string = sessionStorage.getItem('scrapper-login') ?? "null";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyB0wNhng69y2_dkHsPjN1k579LeYrSQWdU",
-        authDomain: "scrapper-9558b.firebaseapp.com",
-        databaseURL: "https://scrapper-9558b-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "scrapper-9558b",
-        storageBucket: "scrapper-9558b.appspot.com",
-        messagingSenderId: "241265284136",
-        appId: "1:241265284136:web:253ec9f008e31a3d03911d"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     
     useEffect(() => {
       if(sessionStorage.getItem('scrapper-login')===null) {
